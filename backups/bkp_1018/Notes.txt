@@ -1,0 +1,12 @@
+1) You should be assigned to a stage assignment only once per month
+2) Anthony Fairchild should be assigned only on Sundays
+3) Opt out outgoing speakers (Sundays only) & the chairman on Wednesdays
+
+05.02.2016
+1) Schedule/remove from schedule anyone for any day
+2) Alter number of times someone is scheduled for the month
+
+06.18.2016
+1) Count total assignments
+2) Count assigned to a particular task
+3) Assigned to  task
