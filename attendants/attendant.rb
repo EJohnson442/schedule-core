@@ -1,4 +1,5 @@
 require_relative 'validations'
+require_relative 'attendant_processes'
 
 class Attendant
     attr_reader :schedule_type, :attendants
@@ -13,13 +14,16 @@ class Attendant
 
     @schedule_day = nil
 
-    def initialize(attendant_data = nil, schedule_type)
-        if attendant_data != nil
-            @attendants = attendant_data.clone
-        end
-
+    def initialize(schedule_type)
         @schedule_type = schedule_type
+        if block_given?
+            @attendants = yield(schedule_type)
+            if schedule_type == :ST_SOUND
+                @@sound_attendants = @attendants
+            end
+        end
     end
+
 
     def get_attendant()
         attendant = "unresolved"
@@ -111,16 +115,5 @@ class Attendant
                 @attendants.each {|candidate| tmp << candidate if @@details.candidates(candidate) <= counter && !tmp.include?(candidate)}
             end
             tmp.clone
-        end
-        
-        def load_data(filename)
-            data = []
-            File.open(filename, "r") do |f|
-                f.each_line do |line|
-                    line.include?("\n") ? data << line.chop! : data << line
-                end
-            end
-            @@randomize_count.times {data.shuffle!}
-            data 
         end
 end

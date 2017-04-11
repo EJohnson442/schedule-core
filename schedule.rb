@@ -80,7 +80,7 @@ class Monthly_Schedule
                 @sound_attendant2 = ''
             end
 
-            @schedule_data.each do |data|
+            @schedule_data.data.each do |data|
                 if data.schedule_type == attendant_type
                     data.schedule_attendant(sound_attendant) 
                     break
@@ -92,7 +92,7 @@ class Monthly_Schedule
 
     def select_attendant(schedule_type, schedule_day)
         cur_attendant = ''
-        @schedule_data.each do |data|
+        @schedule_data.data.each do |data|
             if data.schedule_type == schedule_type  # Get attendant from appropriate list
                 data.schedule_day = schedule_day
                 cur_attendant = data.get_attendant()
