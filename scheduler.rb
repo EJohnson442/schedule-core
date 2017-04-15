@@ -3,7 +3,7 @@ require_relative 'setup'
 require_relative 'schedule'
 require 'attendant.rb'
 
-Attendant.randomize_count = 23      #config value
+#Attendant.randomize_count = 23      #config value
 #This value should be calculated as follows:  weeks - 1 or sun > wed ? sun - 1 : wed - 1
 Attendant.monthly_assignments = 4   #config value
 Attendant.weekly_assignments = Prep_schedule::POSITIONS.count

@@ -2,7 +2,7 @@ module Valid
     public
         class Validation
             def self.assignments=(assignments)
-                @@assignments = assignments
+                @@assignments = assignments # @@assignments => @@monthly_assignments
             end
     
             def self.candidate=(candidate)
@@ -17,8 +17,8 @@ module Valid
                 @@schedule_type = schedule_type
             end
     
-            def self.timesAssignedToTask=(timesAssignedToTask)
-                @@timesAssignedToTask = timesAssignedToTask
+            def self.timesAssignedToTask=(value)
+                @@timesAssignedToTask = value
             end
     
             def self.details=(details)
@@ -32,17 +32,17 @@ module Valid
             def isValid(new_assignments = nil)
                 valid = false
                 new_assignments == nil ? assignments = @@assignments : assignments = new_assignments
-                if !recently_assigned(@@candidate) && (@@details.candidates(@@candidate) <= assignments)
+                if !recently_assigned(@@candidate) && (@@details.count_candidates(@@candidate) <= assignments)
                     valid = true
                 end
         
                 #sound attendants must have a sound attendant assignment before taking on any other assignments
                 #the exception is stage assignments because they both use the same candidates
-                if @@sound_attendants.include?(@@candidate) && (@@schedule_type != :ST_STAGE) && @@details.schedule_types(@@candidate, :ST_SOUND) == 0
+                if @@sound_attendants.include?(@@candidate) && (@@schedule_type != :ST_STAGE) && @@details.count_candidates_for_schedule_types(@@candidate, :ST_SOUND) == 0
                     valid = false
                 end
                 
-                if @@details.schedule_types(@@candidate, @@schedule_type) >= @@timesAssignedToTask
+                if @@details.count_candidates_for_schedule_types(@@candidate, @@schedule_type) >= @@timesAssignedToTask
                     valid = false
                 end
                 valid

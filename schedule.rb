@@ -1,4 +1,5 @@
 require 'date'
+require_relative 'utils'
 
 class Monthly_Schedule
     attr_accessor :sound_position, :rerun_max
@@ -14,6 +15,7 @@ class Monthly_Schedule
             puts "sound_position\\rerun_max undefined"
             exit
         end
+        
         rerun_cnt = 0
         begin
             @rerun = false

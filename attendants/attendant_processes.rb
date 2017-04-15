@@ -6,6 +6,6 @@ module Attendant_data
                 line.include?("\n") ? data << line.chop! : data << line
             end
         end
-        data 
+        data.shuffle!
     end
 end

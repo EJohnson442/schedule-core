@@ -27,7 +27,6 @@ module Prep_schedule
             else
              attendant = Attendant.new(position) {|f| Attendant_data.load_file_data("data/" << f.to_s.slice(3..f.to_s.length - 1).capitalize << ".dat")}
             end
-            #attendant.attendants   RANDOMIZE THIS DATA
         end
     end
 end

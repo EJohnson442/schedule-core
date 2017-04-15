@@ -5,7 +5,7 @@ class Sound < Attendant
         found = true
         attendant = ""
         loop do
-            attendant = super() {|candidate| found = (@@details.schedule_types(candidate, :ST_SOUND) > 0)}
+            attendant = super() {|candidate| found = (@@details.count_candidates_for_schedule_types(candidate, :ST_SOUND) > 0)}
             break if !found || (attendant == "unresolved")
         end
         
