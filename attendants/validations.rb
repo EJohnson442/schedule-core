@@ -61,7 +61,7 @@ module Valid
                 end
         end
 
-        def self.isValid()
+        def Valid.isValid()
             Validation.new().isValid()
         end
 end
