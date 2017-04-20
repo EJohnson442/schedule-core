@@ -60,7 +60,6 @@ class Attendant
         if block_given?
             @attendants = yield(schedule_type)
             if schedule_type == :ST_SOUND
-                #@@sound_attendants = @attendants
                 self.class.sound_attendants = @attendants
             end
         end
@@ -82,7 +81,7 @@ class Attendant
                 end
             else
                 mode = :general
-                if isValid(candidate) {Valid.isValid}
+                if is_valid(candidate) {Valid.is_valid}
                     attendant = candidate
                     break
                 end
@@ -100,12 +99,12 @@ class Attendant
     end
 
     protected
-        def isValid(candidate, &block)
-            Valid::Validation.assignments = self.class.monthly_assignments
+        def is_valid(candidate, &block)
+            Valid::Validation.monthly_assignments = self.class.monthly_assignments
             Valid::Validation.candidate = candidate
             Valid::Validation.sound_attendants = self.class.sound_attendants
             Valid::Validation.schedule_type = @schedule_type
-            Valid::Validation.timesAssignedToTask = self.class.max_assigned_to_task
+            Valid::Validation.max_assigned_to_task = self.class.max_assigned_to_task
             Valid::Validation.details = @@details
             Valid::Validation.weekly_assignments = self.class.weekly_assignments
             yield
