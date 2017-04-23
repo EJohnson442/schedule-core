@@ -7,44 +7,14 @@ class Attendant
     
     @@details = []
 
-    # Class instance variables - begin
     @monthly_assignments = 3
     @weekly_assignments = 10
     @max_assigned_to_task = 2
     @sound_attendants = []
     
-    def self.weekly_assignments=(value)
-        @weekly_assignments = value
+    class << self       #Class instance variables
+        attr_accessor :weekly_assignments, :monthly_assignments, :max_assigned_to_task, :sound_attendants
     end
-    
-    def self.weekly_assignments()
-        @weekly_assignments
-    end
-    
-    def self.monthly_assignments=(value)
-        @monthly_assignments = value
-    end
-    
-    def self.monthly_assignments()
-        @monthly_assignments
-    end
-    
-    def self.max_assigned_to_task=(value)
-        @max_assigned_to_task = value
-    end
-    
-    def self.max_assigned_to_task()
-        @max_assigned_to_task
-    end
-    
-    def self.sound_attendants=(value)
-        @sound_attendants = value
-    end
-    
-    def self.sound_attendants()
-        @sound_attendants
-    end
-    # Class instance variables - end
 
     def self.scheduled()
         @@details

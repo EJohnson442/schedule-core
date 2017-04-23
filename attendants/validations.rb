@@ -1,60 +1,8 @@
 module Valid
     public
         class Validation
-            def self.monthly_assignments()
-                @monthly_assignments
-            end
-            
-            def self.monthly_assignments=(value)
-                @monthly_assignments = value
-            end
-    
-            def self.candidate()
-                @candidate
-            end
-    
-            def self.candidate=(value)
-                @candidate = value
-            end
-    
-            def self.sound_attendants()
-                @sound_attendants
-            end
-    
-            def self.sound_attendants=(value)
-                @sound_attendants = value
-            end
-    
-            def self.schedule_type()
-                @schedule_type
-            end
-    
-            def self.schedule_type=(value)
-                @schedule_type = value
-            end
-    
-            def self.max_assigned_to_task()
-                @max_assigned_to_task
-            end
-    
-            def self.max_assigned_to_task=(value)
-                @max_assigned_to_task = value
-            end
-    
-            def self.details()
-                @details
-            end
-    
-            def self.details=(value)
-                @details = value
-            end
-    
-            def self.weekly_assignments()
-                @weekly_assignments
-            end
-    
-            def self.weekly_assignments=(value)
-                @weekly_assignments = value
+            class << self
+                attr_accessor :monthly_assignments, :candidate, :sound_attendants, :schedule_type, :max_assigned_to_task, :details, :weekly_assignments
             end
 
             def is_valid(new_assignments = nil)

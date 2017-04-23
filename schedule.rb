@@ -16,7 +16,7 @@ class Monthly_Schedule
             puts "sound_position\\rerun_max undefined"
             exit
         end
-        
+
         rerun_cnt = 0
         begin
             @rerun = false
