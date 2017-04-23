@@ -20,7 +20,7 @@ module Prep_schedule
                 end
             end
         end
-    
+
         def create_attendant_classes(position)
             if position == :ST_SOUND
              attendant = Sound.new(position) {|f| Attendant_data.load_file_data("data/" << f.to_s.slice(3..f.to_s.length - 1).capitalize << ".dat")}

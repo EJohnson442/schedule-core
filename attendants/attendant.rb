@@ -2,6 +2,8 @@ require_relative 'validations'
 require_relative 'attendant_processes'
 
 class Attendant
+    include Valid
+    
     attr_reader :schedule_type, :attendants
     attr_writer :schedule_day
     
@@ -70,13 +72,13 @@ class Attendant
 
     protected
         def is_valid(candidate, &block)
-            Valid::Validation.monthly_assignments = self.class.monthly_assignments
-            Valid::Validation.candidate = candidate
-            Valid::Validation.sound_attendants = self.class.sound_attendants
-            Valid::Validation.schedule_type = @schedule_type
-            Valid::Validation.max_assigned_to_task = self.class.max_assigned_to_task
-            Valid::Validation.details = @@details
-            Valid::Validation.weekly_assignments = self.class.weekly_assignments
+            Valid::monthly_assignments = self.class.monthly_assignments
+            Valid::candidate = candidate
+            Valid::sound_attendants = self.class.sound_attendants
+            Valid::schedule_type = @schedule_type
+            Valid::max_assigned_to_task = self.class.max_assigned_to_task
+            Valid::details = @@details
+            Valid::weekly_assignments = self.class.weekly_assignments
             yield
         end
 
