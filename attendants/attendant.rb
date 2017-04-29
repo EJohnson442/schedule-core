@@ -94,7 +94,7 @@ class Attendant
             total
         end
 
-        def prep_data()
+        def prep_data()     #Re-order attendants from least to most assigned
             tmp = []
             (0..@attendants.length).each do |counter|
                 @attendants.each {|candidate| tmp << candidate if @@details.count_candidates(candidate) <= counter && !tmp.include?(candidate)}

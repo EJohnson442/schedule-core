@@ -4,22 +4,10 @@ class Sound < Attendant
     @sound_attendant1 = ''
     @sound_attendant2 = ''
     
-    def self.sound_attendant1()
-        @sound_attendant1
+    class << self       #Class instance variables
+        attr_accessor :sound_attendant1, :sound_attendant2
     end
 
-    def self.sound_attendant1=(value)
-        @sound_attendant1 = value
-    end
-    
-    def self.sound_attendant2()
-        @sound_attendant2
-    end
-
-    def self.sound_attendant2=(value)
-        @sound_attendant2 = value
-    end
-    
     def get_attendant()
         found = true
         attendant = ""
@@ -32,7 +20,7 @@ class Sound < Attendant
         attendant
     end
 
-    def select_attendant(schedule_day_even)
+    def select_attendant(schedule_day_even)     #Sound attendants must be assigned two consecuvite days
         if schedule_day_even
             sound_attendant = get_attendant()
             self.class.sound_attendant1 == '' ? self.class.sound_attendant1 = sound_attendant : self.class.sound_attendant2 = sound_attendant
