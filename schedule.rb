@@ -53,7 +53,7 @@ class Monthly_Schedule
             if data.schedule_type == schedule_type  # Get attendant from appropriate list
                 data.schedule_day = schedule_day
                 if data.respond_to?('select_attendant')
-                    cur_attendant = data.select_attendant(@schedule.index(schedule_day).even?)
+                    cur_attendant = custom_select_attendant(data, @schedule.index(schedule_day).even?)
                     custom_selection = true
                 else
                     cur_attendant = data.get_attendant()

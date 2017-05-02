@@ -5,7 +5,7 @@ class Attendant
     include Valid
     
     attr_reader :schedule_type, :attendants
-    attr_writer :schedule_day
+    attr_accessor :schedule_day
     
     @@details = []
 
