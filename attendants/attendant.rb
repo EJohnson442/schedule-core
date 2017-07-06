@@ -67,7 +67,7 @@ class Attendant
     #Attendants can't be assigned for two consecutive days.  This is done by providing a listing of last weeks assignments (@@weekly_assignments = 10)
     #and current weeks assignments
     def schedule_attendant(attendant)
-        @@details << {@schedule_type => attendant}
+        @@details << {@schedule_type => attendant}  #*********Look for standard way of creating hashes! Consider using only hashes and no arrays**********
     end
 
     protected
@@ -84,20 +84,39 @@ class Attendant
 
         def @@details.count_candidates(candidate)
             total = 0
-            self.each {|h| total += 1 if h.values[0] == candidate}
+            each {|h| total += 1 if h.values[0] == candidate}
             total
         end
-
+=begin
+        def count_candidates(candidate)
+            count = 0
+            @details = @@details
+            @details.inject() do |hash,item|
+                count += 1 if item.values[0] == candidate
+            end
+            count
+        end
+=end
         def @@details.count_candidates_for_schedule_types(candidate, schedule_type)
             total = 0
-            self.each {|h| total += 1 if h[schedule_type] == candidate}
+            each {|h| total += 1 if h[schedule_type] == candidate}
             total
         end
-
+=begin
+        def count_candidates_for_schedule_types(candidate, schedule_type)
+            count = 0
+            @details = @@details
+            @details.inject({}) do |hash, item|
+                count += 1 if item[schedule_type] == candidate
+            end
+            count
+        end
+=end
         def prep_data()     #Re-order attendants from least to most assigned
             tmp = []
             (0..@attendants.length).each do |counter|
                 @attendants.each {|candidate| tmp << candidate if @@details.count_candidates(candidate) <= counter && !tmp.include?(candidate)}
+                #@attendants.each {|candidate| tmp << candidate if count_candidates(candidate) <= counter && !tmp.include?(candidate)}
             end
             tmp.clone
         end

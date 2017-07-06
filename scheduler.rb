@@ -8,7 +8,7 @@ require_relative 'utils'
 Attendant.monthly_assignments = 4   #config value
 Attendant.weekly_assignments = Prep_schedule::POSITIONS.count
 schedule_data = Prep_schedule::Attendant_data_classes.new(Prep_schedule::POSITIONS)
-ms = Monthly_Schedule.new(schedule_data, Prep_schedule::POSITIONS, 2016, 3)
+ms = Monthly_Schedule.new(schedule_data, Prep_schedule::POSITIONS, 2017, 2)
 ms.rerun_max = 5                    #config value
 ms.make_schedule()
 
