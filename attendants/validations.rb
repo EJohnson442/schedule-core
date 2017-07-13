@@ -19,7 +19,6 @@ module Valid
             end
             
             if @details.count_candidates_for_schedule_types(@candidate, @schedule_type) >= @max_assigned_to_task
-            #if count_candidates_for_schedule_types(@candidate, @schedule_type) >= @max_assigned_to_task
                 valid = false
             end
             valid
@@ -36,14 +35,4 @@ module Valid
             @details.each {|d| attendants << d.values[0]}
             attendants.values_at(start_data_range..@details.length - 1).include?(candidate)
         end
-=begin        
-        def Valid.count_candidates_for_schedule_types(candidate, schedule_type)
-            count = 0
-            #@details = @@details
-            @details.inject({}) do |hash, item|
-                count += 1 if item[schedule_type] == candidate
-            end
-            count
-        end
-=end        
 end

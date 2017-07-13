@@ -7,7 +7,7 @@ class Attendant
     attr_reader :schedule_type, :attendants
     attr_accessor :schedule_day
     
-    @@details = []
+    @@details = []      #BAD OLE global variable. But it's worth the efficiency benefits and I'll be really careful!
 
     @monthly_assignments = 3
     @weekly_assignments = 10

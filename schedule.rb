@@ -6,25 +6,9 @@ class Monthly_Schedule
 
     attr_accessor :rerun_max
     attr_reader :schedule
-=begin    
-    def initialize(schedule_data, positions, year, month)
-        @positions = positions.clone
-        @schedule_data_bkp = schedule_data.clone
-        @year = year
-        @month = month
-    end
-
-    def i2(prep_schedule, positions, year, month)
-        @positions = prep_schedule::POSITIONS
-        @schedule_data_bkp = prep_schedule::Attendant_data_classes.new(prep_schedule::POSITIONS)
-        @year = year
-        @month = month
-    end
-=end
     def initialize(prep_schedule, year, month)
         @prep_schedule = prep_schedule
         @positions = prep_schedule::POSITIONS
-        @schedule_data_bkp = prep_schedule::Attendant_data_classes.new(prep_schedule::POSITIONS)
         @year = year
         @month = month
     end
@@ -37,20 +21,19 @@ class Monthly_Schedule
             @schedule.each do |schedule_day|
                 rerun = new_schedule(schedule_day,calendar)
                 if rerun
+                    rerun_cnt += 1
                     Attendant.data_reset()
-                    #create reshuffled dataset
-                    break
                 end
             end
 
-            break if rerun_max < rerun_cnt += 1
+            break if rerun_max < rerun_cnt
         end while rerun == true
         puts "rerun_cnt = #{rerun_cnt} & rerun_max = #{rerun_max} & rerun = #{rerun}"
     end
 
     protected
     def new_schedule(schedule_day,calendar)                 #Cycle through positions
-        #update schedule date here
+        #update schedule date here???
         rerun = false
         schedule_day << calendar.shift
         @positions.each do |schedule_type|
@@ -84,8 +67,8 @@ class Monthly_Schedule
     end
 
     def reset_calendar()
-        @schedule_data = @schedule_data_bkp.clone
-        calendar = gen_calendar(@year,@month,[SUN,WED]) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday]+" "+d.to_s}
+        @schedule_data = @prep_schedule::Attendant_data_classes.new(@positions)
+        calendar = gen_calendar(@year,@month,[SUN,WED]) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday] + " " + d.to_s}
         @schedule = Array.new(calendar.length){|i| i = []}
         calendar
     end
