@@ -6,6 +6,7 @@ class Monthly_Schedule
 
     attr_accessor :rerun_max
     attr_reader :schedule
+=begin    
     def initialize(schedule_data, positions, year, month)
         @positions = positions.clone
         @schedule_data_bkp = schedule_data.clone
@@ -13,7 +14,22 @@ class Monthly_Schedule
         @month = month
     end
 
-    def make_schedule()
+    def i2(prep_schedule, positions, year, month)
+        @positions = prep_schedule::POSITIONS
+        @schedule_data_bkp = prep_schedule::Attendant_data_classes.new(prep_schedule::POSITIONS)
+        @year = year
+        @month = month
+    end
+=end
+    def initialize(prep_schedule, year, month)
+        @prep_schedule = prep_schedule
+        @positions = prep_schedule::POSITIONS
+        @schedule_data_bkp = prep_schedule::Attendant_data_classes.new(prep_schedule::POSITIONS)
+        @year = year
+        @month = month
+    end
+    
+    def make_schedule()                                     #Cycle through appropriate calendar dates
         rerun_cnt = 0
         begin
             rerun = false
@@ -22,22 +38,25 @@ class Monthly_Schedule
                 rerun = new_schedule(schedule_day,calendar)
                 if rerun
                     Attendant.data_reset()
+                    #create reshuffled dataset
                     break
                 end
             end
 
             break if rerun_max < rerun_cnt += 1
         end while rerun == true
+        puts "rerun_cnt = #{rerun_cnt} & rerun_max = #{rerun_max} & rerun = #{rerun}"
     end
 
     protected
-    def new_schedule(schedule_day,calendar)
+    def new_schedule(schedule_day,calendar)                 #Cycle through positions
         #update schedule date here
         rerun = false
         schedule_day << calendar.shift
         @positions.each do |schedule_type|
-            attendant, standard_selection = select_attendant(schedule_type, schedule_day)
-            if attendant == "unresolved" && !standard_selection   #WARNING -standard_selection COULD BE PROBLEMATIC
+            attendant, custom_selection = select_attendant(schedule_type, schedule_day)
+            if attendant == "unresolved" && custom_selection
+                puts "custom_selection = #{custom_selection}"
                 rerun = true
                 break
             end

@@ -12,21 +12,20 @@ module Prep_schedule
         attr_reader :data
         def initialize(positions)
             @data = []
-            filtered_positions = []
-            positions.each do |p|
-                if !filtered_positions.include?(p)
-                    @data << create_attendant_classes(p)
-                    filtered_positions << p
-                end
-            end
+            positions.each {|p| @data << create_attendant_classes(p) if !@data.include?(p)}
         end
 
         def create_attendant_classes(position)
             if position == :ST_SOUND
-             attendant = Sound.new(position) {|f| Attendant_data.load_file_data("data/" << f.to_s.slice(3..f.to_s.length - 1).capitalize << ".dat")}
+             attendant_class = Sound
             else
-             attendant = Attendant.new(position) {|f| Attendant_data.load_file_data("data/" << f.to_s.slice(3..f.to_s.length - 1).capitalize << ".dat")}
+             attendant_class = Attendant
             end
+            attendant = attendant_class.new(position) {|f| load_data(f)}
+        end
+
+        def load_data(position)
+            Attendant_data.load_file_data("data/" << position.to_s.slice(3..-1).capitalize << ".dat")
         end
     end
 end
