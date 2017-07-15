@@ -10,3 +10,8 @@
 1) Count total assignments
 2) Count assigned to a particular task
 3) Assigned to  task
+07.14.2017
+The following variables are located in attendant.rb and their values should be configuration variables:
+    @monthly_assignments = 3
+    @weekly_assignments = 10
+    @max_assigned_to_task = 2

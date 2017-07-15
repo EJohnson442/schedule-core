@@ -1,7 +1,7 @@
 require 'attendant'
 
 class Sound < Attendant
-    class << self       #Class instance variables
+    class << self                               #Class instance variables
         attr_accessor :sound_attendant1, :sound_attendant2
     end
 
@@ -10,7 +10,6 @@ class Sound < Attendant
         attendant = ""
         loop do
             attendant = super() {|candidate| found = (@@details.count_candidates_for_schedule_types(candidate, :ST_SOUND) > 0)}
-            #attendant = super() {|candidate| found = (count_candidates_for_schedule_types(candidate, :ST_SOUND) > 0)}
             break if !found || (attendant == "unresolved")
         end
         

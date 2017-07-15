@@ -1,7 +1,7 @@
 module Valid
     public
         class << self
-            attr_accessor :monthly_assignments, :candidate, :sound_attendants, :schedule_type, :max_assigned_to_task, :details, :weekly_assignments
+            attr_accessor :monthly_assignments, :candidate, :schedule_type, :max_assigned_to_task, :details, :weekly_assignments
         end
 
         def Valid.is_valid(new_assignments = nil)
@@ -10,14 +10,7 @@ module Valid
             if !recently_assigned(@candidate) && (@details.count_candidates(@candidate) <= assignments)
                 valid = true
             end
-    
-            #sound attendants must have a sound attendant assignment before taking on any other assignments
-            #the exception is stage assignments because they both use the same candidates
-            #if @sound_attendants.include?(@candidate) && (@schedule_type != :ST_STAGE) && @details.count_candidates_for_schedule_types(@candidate, :ST_SOUND) == 0
-            if @sound_attendants.include?(@candidate) && (@schedule_type != :ST_STAGE) && count_candidates_for_schedule_types(@candidate, :ST_SOUND) == 0
-                valid = false
-            end
-            
+
             if @details.count_candidates_for_schedule_types(@candidate, @schedule_type) >= @max_assigned_to_task
                 valid = false
             end

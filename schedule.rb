@@ -1,5 +1,6 @@
 require 'date'
 require_relative 'utils'
+require 'logger'
 
 class Monthly_Schedule
     include Schedule_helper
@@ -11,6 +12,7 @@ class Monthly_Schedule
         @positions = prep_schedule::POSITIONS
         @year = year
         @month = month
+        logger()
     end
     
     def make_schedule()                                     #Cycle through appropriate calendar dates
@@ -28,7 +30,8 @@ class Monthly_Schedule
 
             break if rerun_max < rerun_cnt
         end while rerun == true
-        puts "rerun_cnt = #{rerun_cnt} & rerun_max = #{rerun_max} & rerun = #{rerun}"
+        @logger.debug("rerun_cnt = #{rerun_cnt} & rerun_max = #{rerun_max} & rerun = #{rerun}")
+        @logger.warn("increase rerun_max or total attendant") if rerun_cnt > rerun_max
     end
 
     protected
@@ -39,7 +42,6 @@ class Monthly_Schedule
         @positions.each do |schedule_type|
             attendant, custom_selection = select_attendant(schedule_type, schedule_day)
             if attendant == "unresolved" && custom_selection
-                puts "custom_selection = #{custom_selection}"
                 rerun = true
                 break
             end
@@ -71,5 +73,11 @@ class Monthly_Schedule
         calendar = gen_calendar(@year,@month,[SUN,WED]) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday] + " " + d.to_s}
         @schedule = Array.new(calendar.length){|i| i = []}
         calendar
+    end
+    
+    def logger()
+        @logger = Logger.new(STDOUT, progname: 'fishy')
+        @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
+        @logger.level = Logger::DEBUG
     end
 end
