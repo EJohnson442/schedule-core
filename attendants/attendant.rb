@@ -2,12 +2,10 @@ require_relative 'validations'
 require_relative 'attendant_processes'
 
 class Attendant
-    include Valid
-    
     attr_reader :schedule_type, :attendants
-    attr_accessor :schedule_day
+    attr_writer :schedule_day
     
-    @@details = []      #BAD OLE global variable. But it's worth the efficiency benefits and I'll be really careful!
+    @@details = []
 
     @monthly_assignments = 3
     @weekly_assignments = 10
@@ -46,14 +44,13 @@ class Attendant
         attendant_data.each do |candidate|
             if block_given?
                 mode = :custom
-                #Custom filters including sound attendants
                 if !yield(candidate)
                     attendant = candidate
                     break
                 end
             else
                 mode = :general
-                if is_valid(candidate) {Valid.is_valid}
+                if is_valid(candidate) {Valid::Validation.new().is_valid()}
                     attendant = candidate
                     break
                 end
@@ -70,12 +67,12 @@ class Attendant
 
     protected
         def is_valid(candidate, &block)
-            Valid::monthly_assignments = self.class.monthly_assignments
-            Valid::candidate = candidate
-            Valid::schedule_type = @schedule_type
-            Valid::max_assigned_to_task = self.class.max_assigned_to_task
-            Valid::details = @@details
-            Valid::weekly_assignments = self.class.weekly_assignments
+            Valid::Validation.monthly_assignments = self.class.monthly_assignments
+            Valid::Validation.candidate = candidate
+            Valid::Validation.schedule_type = @schedule_type
+            Valid::Validation.max_assigned_to_task = self.class.max_assigned_to_task
+            Valid::Validation.details = @@details
+            Valid::Validation.weekly_assignments = self.class.weekly_assignments
             yield
         end
 
@@ -91,7 +88,19 @@ class Attendant
             total
         end
 
-        def prep_data()     #Re-order attendants from least to most assigned
+        def @@details.position_of(candidate)
+            ndx = pos = 0
+            each do |h|
+                ndx += 1
+                if h.values[0] == candidate
+                    pos = ndx
+                    break
+                end
+            end
+            pos
+        end
+
+        def prep_data()
             tmp = []
             (0..@attendants.length).each do |counter|
                 @attendants.each {|candidate| tmp << candidate if @@details.count_candidates(candidate) <= counter && !tmp.include?(candidate)}

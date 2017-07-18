@@ -1,5 +1,4 @@
 require 'date'
-require_relative 'utils'
 require 'logger'
 
 class Monthly_Schedule
@@ -7,70 +6,71 @@ class Monthly_Schedule
 
     attr_accessor :rerun_max
     attr_reader :schedule
-    def initialize(prep_schedule, year, month)
+    def initialize(prep_schedule, year, month, schedule_days = [])
         @prep_schedule = prep_schedule
         @positions = prep_schedule::POSITIONS
         @year = year
         @month = month
+        @schedule_days = schedule_days
+        @unresolved = 0
         logger()
     end
-    
-    def make_schedule()                                     #Cycle through appropriate calendar dates
-        rerun_cnt = 0
-        begin
-            rerun = false
-            calendar = reset_calendar()
-            @schedule.each do |schedule_day|
-                rerun = new_schedule(schedule_day,calendar)
-                if rerun
-                    rerun_cnt += 1
-                    Attendant.data_reset()
-                end
-            end
 
-            break if rerun_max < rerun_cnt
-        end while rerun == true
-        @logger.debug("rerun_cnt = #{rerun_cnt} & rerun_max = #{rerun_max} & rerun = #{rerun}")
-        @logger.warn("increase rerun_max or total attendant") if rerun_cnt > rerun_max
+    def make_schedule()
+        rerun = false
+        rerun_count = 0
+        begin
+            calendar = reset_calendar()
+            Attendant.data_reset() if rerun
+            @schedule.each {|schedule_day| new_schedule(schedule_day,calendar)}
+            @logger.debug("schedule = #{@schedule.inspect}")
+            break if rerun_max <= rerun_count += 1
+            rerun = Attendant.scheduled.count_candidates("unresolved")
+            optimize_data() if rerun || @tmp_Attendant != nil
+        end while rerun
+        @schedule = @tmp_schedule if @tmp_schedule != nil
+    end
+
+    #keep data with fewest occurances of "unresolved" & position of "unresolved" nearest month's end
+    def optimize_data()
+        if @tmp_Attendant == nil
+            @tmp_Attendant = Attendant.scheduled()
+            @tmp_schedule = @schedule
+        elsif @tmp_Attendant.count_candidates("unresolved") >= Attendant.scheduled.count_candidates("unresolved") && @tmp_Attendant.position_of("unresolved") < Attendant.scheduled.position_of("unresolved")
+                @tmp_Attendant = Attendant.scheduled()
+                @tmp_schedule = @schedule
+        end
     end
 
     protected
-    def new_schedule(schedule_day,calendar)                 #Cycle through positions
-        #update schedule date here???
-        rerun = false
+    def new_schedule(schedule_day,calendar)
+        #update schedule date here
         schedule_day << calendar.shift
         @positions.each do |schedule_type|
-            attendant, custom_selection = select_attendant(schedule_type, schedule_day)
-            if attendant == "unresolved" && custom_selection
-                rerun = true
-                break
-            end
+            attendant = select_attendant(schedule_type, schedule_day)
             schedule_day << schedule_type.id2name[3..schedule_type.id2name.length] + " = " + attendant
         end
-        rerun
     end
 
     def select_attendant(schedule_type, schedule_day)
         cur_attendant = ''
-        custom_selection = false
         @schedule_data.data.each do |data|
             if data.schedule_type == schedule_type  # Get attendant from appropriate list
                 data.schedule_day = schedule_day
                 if data.respond_to?('select_attendant')
-                    cur_attendant = custom_select_attendant(data, @schedule.index(schedule_day).even?)
-                    custom_selection = true
+                    cur_attendant = data.select_attendant(@schedule.index(schedule_day).even?)  #What is this parameter about?????
                 else
                     cur_attendant = data.get_attendant()
                 end
                 break
             end
         end
-        [cur_attendant,custom_selection]
+        cur_attendant
     end
 
     def reset_calendar()
         @schedule_data = @prep_schedule::Attendant_data_classes.new(@positions)
-        calendar = gen_calendar(@year,@month,[SUN,WED]) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday] + " " + d.to_s}
+        calendar = gen_calendar(@year,@month,@schedule_days) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday] + " " + d.to_s}
         @schedule = Array.new(calendar.length){|i| i = []}
         calendar
     end
