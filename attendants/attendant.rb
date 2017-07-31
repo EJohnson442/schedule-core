@@ -1,52 +1,51 @@
 require_relative 'validations'
 require_relative 'attendant_processes'
+$LOAD_PATH << '.'
+require 'logging'
 
 class Attendant
     attr_reader :schedule_type, :attendants
     attr_writer :schedule_day
     
-    @@details = []
+    @@scheduled = []                  #Consider renaming this scheduled
 
-    @monthly_assignments = 3
-    @weekly_assignments = 10
-    @max_assigned_to_task = 2
-    @sound_attendants = []
-    
-    class << self       #Class instance variables
+    @monthly_assignments = 3        #should be config item
+    @weekly_assignments = 10        #should be config item
+    @max_assigned_to_task = 2       #should be config item
+
+    class << self                   #Class instance variables
         attr_accessor :weekly_assignments, :monthly_assignments, :max_assigned_to_task, :sound_attendants
     end
 
     def self.scheduled()
-        @@details
+        @@scheduled
     end
     
     def self.data_reset()
-        @sound_attendants.clear
-        @@details.clear
+        @@scheduled.clear
     end
 
     def initialize(schedule_type)
         @schedule_type = schedule_type
         if block_given?
             @attendants = yield(schedule_type)
-            if schedule_type == :ST_SOUND
-                self.class.sound_attendants = @attendants
-            end
         end
     end
-
 
     def get_attendant()
         attendant = "unresolved"
         mode = :initial
-        attendant_data = prep_data()
+        attendant_data = prioritize_data()
 
         attendant_data.each do |candidate|
             if block_given?
                 mode = :custom
-                if !yield(candidate)
+                if yield(candidate)
                     attendant = candidate
+                    Logs.debug("candidate = #{candidate}")
                     break
+                else
+                    Logs.debug("candidate for yield = #{candidate}")
                 end
             else
                 mode = :general
@@ -62,7 +61,7 @@ class Attendant
     end
 
     def schedule_attendant(attendant)
-        @@details << {@schedule_type => attendant}
+        @@scheduled << {@schedule_type => attendant}
     end
 
     protected
@@ -71,40 +70,31 @@ class Attendant
             Valid::Validation.candidate = candidate
             Valid::Validation.schedule_type = @schedule_type
             Valid::Validation.max_assigned_to_task = self.class.max_assigned_to_task
-            Valid::Validation.details = @@details
+            Valid::Validation.scheduled = @@scheduled
             Valid::Validation.weekly_assignments = self.class.weekly_assignments
             yield
         end
 
-        def @@details.count_candidates(candidate)
+        def @@scheduled.count_candidates(candidate, schedule_type = nil)
             total = 0
-            each {|h| total += 1 if h.values[0] == candidate}
-            total
-        end
-
-        def @@details.count_candidates_for_schedule_types(candidate, schedule_type)
-            total = 0
-            each {|h| total += 1 if h[schedule_type] == candidate}
-            total
-        end
-
-        def @@details.position_of(candidate)
-            ndx = pos = 0
-            each do |h|
-                ndx += 1
-                if h.values[0] == candidate
-                    pos = ndx
-                    break
-                end
+            each do |c|
+                schedule_type != nil ? detail = c[schedule_type] : detail = c.values[0]
+                total += 1 if detail == candidate
             end
+            total
+        end
+
+        def @@scheduled.position_of(candidate)
+            pos = 0
+            each { |c| c.values[0] == candidate ? break : pos += 1 }
             pos
         end
 
-        def prep_data()
+        def prioritize_data()
             tmp = []
             (0..@attendants.length).each do |counter|
-                @attendants.each {|candidate| tmp << candidate if @@details.count_candidates(candidate) <= counter && !tmp.include?(candidate)}
+                @attendants.each {|candidate| tmp << candidate if @@scheduled.count_candidates(candidate) <= counter && !tmp.include?(candidate)}
             end
-            tmp.clone
+            tmp
         end
 end

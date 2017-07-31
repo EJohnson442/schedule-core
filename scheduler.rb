@@ -12,9 +12,9 @@ ms.rerun_max = 5                    #config value
 ms.make_schedule()
 
 #********** TEST CODE **********
-include Schedule_helper
+include Schedule_helper     #Utils.rb
 showdata(ms.schedule)
 
-puts ""
-puts "details = #{Attendant.scheduled}"
-puts ""
+#puts ""
+#puts "details = #{Attendant.scheduled}"
+#puts ""

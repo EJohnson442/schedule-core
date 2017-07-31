@@ -10,18 +10,16 @@ module Prep_schedule
 
     class Attendant_data_classes
         attr_reader :data
+
         def initialize(positions)
             @data = []
-            positions.each {|p| @data << create_attendant_classes(p) if !@data.include?(p)}
+            positions.uniq.each { |p| @data << create_attendant_classes(p) }
+            @data
         end
 
         def create_attendant_classes(position)
-            if position == :ST_SOUND
-             attendant_class = Sound
-            else
-             attendant_class = Attendant
-            end
-            attendant = attendant_class.new(position) {|f| load_data(f)}
+            position == :ST_SOUND ? attendant_class = Sound : attendant_class = Attendant
+            attendant_class.new(position) {|f| load_data(f)}
         end
 
         def load_data(position)

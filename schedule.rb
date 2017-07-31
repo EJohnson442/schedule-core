@@ -12,34 +12,20 @@ class Monthly_Schedule
         @year = year
         @month = month
         @schedule_days = schedule_days
-        @unresolved = 0
-        logger()
     end
 
     def make_schedule()
         rerun = false
         rerun_count = 0
         begin
-            calendar = reset_calendar()
+            calendar = reset_calendar(rerun)
             Attendant.data_reset() if rerun
             @schedule.each {|schedule_day| new_schedule(schedule_day,calendar)}
-            @logger.debug("schedule = #{@schedule.inspect}")
+            Logs.debug("schedule = #{@schedule.inspect}")
             break if rerun_max <= rerun_count += 1
             rerun = Attendant.scheduled.count_candidates("unresolved")
-            optimize_data() if rerun || @tmp_Attendant != nil
         end while rerun
         @schedule = @tmp_schedule if @tmp_schedule != nil
-    end
-
-    #keep data with fewest occurances of "unresolved" & position of "unresolved" nearest month's end
-    def optimize_data()
-        if @tmp_Attendant == nil
-            @tmp_Attendant = Attendant.scheduled()
-            @tmp_schedule = @schedule
-        elsif @tmp_Attendant.count_candidates("unresolved") >= Attendant.scheduled.count_candidates("unresolved") && @tmp_Attendant.position_of("unresolved") < Attendant.scheduled.position_of("unresolved")
-                @tmp_Attendant = Attendant.scheduled()
-                @tmp_schedule = @schedule
-        end
     end
 
     protected
@@ -54,7 +40,7 @@ class Monthly_Schedule
 
     def select_attendant(schedule_type, schedule_day)
         cur_attendant = ''
-        @schedule_data.data.each do |data|
+        @attendant_classes.data.each do |data|
             if data.schedule_type == schedule_type  # Get attendant from appropriate list
                 data.schedule_day = schedule_day
                 if data.respond_to?('select_attendant')
@@ -68,16 +54,21 @@ class Monthly_Schedule
         cur_attendant
     end
 
-    def reset_calendar()
-        @schedule_data = @prep_schedule::Attendant_data_classes.new(@positions)
+    def reset_calendar(rerun)
+        optimize_calendar() if rerun
+        @attendant_classes = @prep_schedule::Attendant_data_classes.new(@positions)
         calendar = gen_calendar(@year,@month,@schedule_days) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday] + " " + d.to_s}
         @schedule = Array.new(calendar.length){|i| i = []}
         calendar
     end
-    
-    def logger()
-        @logger = Logger.new(STDOUT, progname: 'fishy')
-        @logger.datetime_format = '%Y-%m-%d %H:%M:%S'
-        @logger.level = Logger::DEBUG
+
+    def optimize_calendar()
+        if @tmp_Attendant == nil ||
+           (@tmp_Attendant.count_candidates("unresolved") > Attendant.scheduled.count_candidates("unresolved"))
+             @tmp_Attendant = Attendant.scheduled()
+        elsif @tmp_Attendant.position_of("unresolved") < Attendant.scheduled.position_of("unresolved")
+             @tmp_Attendant = Attendant.scheduled()
+             @tmp_schedule = @schedule
+        end
     end
 end
