@@ -63,12 +63,20 @@ class Monthly_Schedule
     end
 
     def optimize_calendar()
+        if @tmp_Attendant != nil
+            Logs.debug("tmp_attendant = #{@tmp_Attendant.count_candidates('unresolved')} & attendant = #{Attendant.scheduled.count_candidates('unresolved')}")
+        else
+            Logs.debug("tmp_Attendant is nil")
+        end
         if @tmp_Attendant == nil ||
            (@tmp_Attendant.count_candidates("unresolved") > Attendant.scheduled.count_candidates("unresolved"))
-             @tmp_Attendant = Attendant.scheduled()
-        elsif @tmp_Attendant.position_of("unresolved") < Attendant.scheduled.position_of("unresolved")
-             @tmp_Attendant = Attendant.scheduled()
+             @tmp_Attendant = Attendant.scheduled().clone
              @tmp_schedule = @schedule
+             Logs.debug("changed because of count")
+        elsif @tmp_Attendant.position_of("unresolved") < Attendant.scheduled.position_of("unresolved")
+             @tmp_Attendant = Attendant.scheduled().clone
+             @tmp_schedule = @schedule
+             Logs.debug("changed because of position")
         end
     end
 end
