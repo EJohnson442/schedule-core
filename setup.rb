@@ -2,6 +2,7 @@ $LOAD_PATH << 'attendants'
 require 'attendant_processes'
 require 'attendant'
 require 'sound'
+require 'consecutive_days'
 
 module Prep_schedule
     include Attendant_data
@@ -18,7 +19,7 @@ module Prep_schedule
         end
 
         def create_attendant_classes(position)
-            position == :ST_SOUND ? attendant_class = Sound : attendant_class = Attendant
+            position == :ST_SOUND ? attendant_class = Consecutive_days : attendant_class = Attendant
             attendant_class.new(position) {|f| load_data(f)}
         end
 

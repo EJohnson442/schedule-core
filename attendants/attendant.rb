@@ -5,8 +5,7 @@ require 'logging'
 
 class Attendant
     attr_reader :schedule_type, :attendants
-    attr_writer :schedule_day
-    
+
     @@scheduled = []                  #Consider renaming this scheduled
 
     @monthly_assignments = 3        #should be config item
@@ -18,7 +17,7 @@ class Attendant
     end
 
     def self.scheduled()
-        @@scheduled
+        @@scheduled.clone
     end
     
     def self.data_reset()
@@ -35,7 +34,7 @@ class Attendant
     def get_attendant()
         attendant = "unresolved"
         mode = :initial
-        attendant_data = prioritize_data()
+        attendant_data = prioritize_attendants()
 
         attendant_data.each do |candidate|
             if block_given?
@@ -90,11 +89,11 @@ class Attendant
             pos
         end
 
-        def prioritize_data()
-            tmp = []
+        def prioritize_attendants()
+            attendants = []
             (0..@attendants.length).each do |counter|
-                @attendants.each {|candidate| tmp << candidate if @@scheduled.count_candidates(candidate) <= counter && !tmp.include?(candidate)}
+                @attendants.each {|candidate| attendants << candidate if @@scheduled.count_candidates(candidate) <= counter && !attendants.include?(candidate)}
             end
-            tmp
+            attendants
         end
 end

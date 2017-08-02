@@ -42,9 +42,8 @@ class Monthly_Schedule
         cur_attendant = ''
         @attendant_classes.data.each do |data|
             if data.schedule_type == schedule_type  # Get attendant from appropriate list
-                data.schedule_day = schedule_day
-                if data.respond_to?('select_attendant')
-                    cur_attendant = data.select_attendant(@schedule.index(schedule_day).even?)  #What is this parameter about?????
+                if data.respond_to?('custom_attendant')
+                    cur_attendant = data.custom_attendant(schedule_day[0])
                 else
                     cur_attendant = data.get_attendant()
                 end
@@ -70,13 +69,9 @@ class Monthly_Schedule
         end
         if @tmp_Attendant == nil ||
            (@tmp_Attendant.count_candidates("unresolved") > Attendant.scheduled.count_candidates("unresolved"))
-             @tmp_Attendant = Attendant.scheduled().clone
+             @tmp_Attendant = Attendant.scheduled()
              @tmp_schedule = @schedule
              Logs.debug("changed because of count")
-        elsif @tmp_Attendant.position_of("unresolved") < Attendant.scheduled.position_of("unresolved")
-             @tmp_Attendant = Attendant.scheduled().clone
-             @tmp_schedule = @schedule
-             Logs.debug("changed because of position")
         end
     end
 end
