@@ -16,6 +16,7 @@ class Consecutive_days < Attendant
     end
     
     def custom_attendant(current_day)
+        Logs.debug("current_day = #{current_day}")
         process_day(current_day)
         if @days_count == 1                                       #first day
             attendant = get_attendant()
@@ -36,7 +37,6 @@ class Consecutive_days < Attendant
                 #'add_to_schedule' is returned to yield
                 #add to schedule if not already scheduled
                 attendant = super() {|candidate| add_to_schedule = (@@scheduled.count_candidates(candidate, @schedule_type) == 0)}
-                Logs.debug("add_to_schedule = #{add_to_schedule} & attendant = #{attendant}")
                 break if add_to_schedule || (attendant == "unresolved")
             end
             

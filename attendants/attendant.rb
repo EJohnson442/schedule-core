@@ -125,10 +125,9 @@ class Attendant
         end
         
         def self.optimize_schedule()
-           if @@scheduled_optimized == [] 
-               @@scheduled_optimized = @@scheduled.dup
-           elsif @@scheduled_optimized.count_candidates(DEFAULT_ATTENDANT) > @@scheduled.count_candidates(DEFAULT_ATTENDANT)
-               @@scheduled_optimized = @@scheduled.dup
-           end
+            if @@scheduled_optimized == [] ||
+               @@scheduled_optimized.count_candidates(DEFAULT_ATTENDANT) > @@scheduled.count_candidates(DEFAULT_ATTENDANT)
+                @@scheduled_optimized = @@scheduled.dup
+            end
         end
 end
