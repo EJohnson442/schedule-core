@@ -4,24 +4,25 @@ require 'logging'
 
 class Consecutive_days < Attendant
     class << self
-        attr_accessor :consecutive_days, :current_day, :attendants, :days_count
+        attr_accessor :attendants
     end
 
     def initialize(schedule_type, consecutive_days = 2)
         super(schedule_type)
-        self.class.consecutive_days = consecutive_days
-        self.class.days_count = 0
+        @consecutive_days = consecutive_days
+        @days_count = 0
         self.class.attendants = []
         @index = -1
     end
     
     def custom_attendant(current_day)
         process_day(current_day)
-        if self.class.days_count == 1                                       #first day
+        if @days_count == 1                                       #first day
             attendant = get_attendant()
             self.class.attendants << attendant
         else
             attendant = self.class.attendants[@index += 1]
+            schedule_attendant(attendant)
             @index = -1 if @index == self.class.attendants.length - 1
         end
         attendant
@@ -44,10 +45,10 @@ class Consecutive_days < Attendant
         end
         
         def process_day(current_day)
-            if self.class.current_day != current_day
-                self.class.current_day = current_day
-                if self.class.consecutive_days < self.class.days_count += 1     #first day
-                    self.class.days_count = 1
+            if @current_day != current_day
+                @current_day = current_day
+                if @consecutive_days < @days_count += 1     #first day
+                    @days_count = 1
                     self.class.attendants.clear()
                 end
             end

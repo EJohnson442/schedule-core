@@ -6,14 +6,17 @@ require 'logging'
 class Attendant
     attr_reader :schedule_type, :attendants
 
-    @@scheduled = []                  #Consider renaming this scheduled
+    DEFAULT_ATTENDANT = "unresolved"
+    
+    @@scheduled = []
+    @@scheduled_optimized = []
 
     @monthly_assignments = 3        #should be config item
     @weekly_assignments = 10        #should be config item
     @max_assigned_to_task = 2       #should be config item
 
     class << self                   #Class instance variables
-        attr_accessor :weekly_assignments, :monthly_assignments, :max_assigned_to_task, :sound_attendants
+        attr_accessor :weekly_assignments, :monthly_assignments, :max_assigned_to_task, :sound_attendants, :scheduled
     end
 
     def self.scheduled()
@@ -21,7 +24,30 @@ class Attendant
     end
     
     def self.data_reset()
+        optimize_schedule()
         @@scheduled.clear
+    end
+
+    def self.optimized_schedule()
+        @@scheduled_optimized == [] ? @@scheduled : @@scheduled_optimized
+    end
+
+    def self.to_calendar(calendar, positions)
+        schedule = []
+        attendants = optimized_schedule()
+        attendant_list = []
+        
+        attendants.each do |a| 
+            position = a.keys[0].id2name
+            attendant_list << position[3..position.length] + " = " + a.values[0]
+        end
+
+        (0..calendar.length - 1).each do
+            daily_attendants = attendant_list.shift(positions)
+            daily_attendants.insert(0,calendar.shift)
+            schedule << daily_attendants
+        end
+        schedule
     end
 
     def initialize(schedule_type)
@@ -29,10 +55,11 @@ class Attendant
         if block_given?
             @attendants = yield(schedule_type)
         end
+        @@scheduled_optimized = @@scheduled
     end
 
     def get_attendant()
-        attendant = "unresolved"
+        attendant = DEFAULT_ATTENDANT
         mode = :initial
         attendant_data = prioritize_attendants()
 
@@ -95,5 +122,13 @@ class Attendant
                 @attendants.each {|candidate| attendants << candidate if @@scheduled.count_candidates(candidate) <= counter && !attendants.include?(candidate)}
             end
             attendants
+        end
+        
+        def self.optimize_schedule()
+           if @@scheduled_optimized == [] 
+               @@scheduled_optimized = @@scheduled.dup
+           elsif @@scheduled_optimized.count_candidates(DEFAULT_ATTENDANT) > @@scheduled.count_candidates(DEFAULT_ATTENDANT)
+               @@scheduled_optimized = @@scheduled.dup
+           end
         end
 end
