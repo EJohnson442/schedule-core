@@ -15,3 +15,20 @@ The following variables are located in attendant.rb and their values should be c
     @monthly_assignments = 3
     @weekly_assignments = 10
     @max_assigned_to_task = 2
+
+08.24.2017
+1) consecutive_days
+    - need:
+        - max consecutive days_count
+        - start date for consecutive_days
+        
+2) auto-configuration
+    - how to configure yaml
+        - configure by page/class
+        - variable names/special designation (using alias?)
+        - look for a class 'attr_accessor'/varible presence in class
+            - it's probably always to have an attr_accessor for any configurable data?
+                - Question: does it make sense to create variables that can only be set through configuration files?
+                
+            
+        

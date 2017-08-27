@@ -1,0 +1,9 @@
+#attendant.rb
+monthly_assignments: 4
+weekly_assignments: 10
+max_assigned_to_task: 2
+
+#schedule.rb
+rerun_max: 5
+month: 7
+year: 2017

@@ -1,28 +1,25 @@
 require_relative 'validations'
 require_relative 'attendant_processes'
-$LOAD_PATH << '.'
 require 'logging'
 
 class Attendant
     attr_reader :schedule_type, :attendants
 
+    #I want this assignment to be true everywhere. This needs to be done at another level. Should it be done through a config file
+    #or is there a better way???? Maybe this could be aa gloal variable and not require lookup in a config file
     DEFAULT_ATTENDANT = "unresolved"
     
-    @@scheduled = []
-    @@scheduled_optimized = []
-
-    @monthly_assignments = 3        #should be config item
-    @weekly_assignments = 10        #should be config item
-    @max_assigned_to_task = 2       #should be config item
+    @@scheduled_optimized = @@scheduled = []
 
     class << self                   #Class instance variables
-        attr_accessor :weekly_assignments, :monthly_assignments, :max_assigned_to_task, :sound_attendants, :scheduled
+        attr_accessor :weekly_assignments, :monthly_assignments, :max_assigned_to_task
     end
 
+    #access class variables
     def self.scheduled()
         @@scheduled.clone
     end
-    
+
     def self.data_reset()
         optimize_schedule()
         @@scheduled.clear
@@ -36,16 +33,15 @@ class Attendant
         schedule = []
         attendants = optimized_schedule()
         attendant_list = []
-        
-        attendants.each do |a| 
-            position = a.keys[0].id2name
+        attendants.each do |a|                                      #TO DO!!!!!
+            position = a.keys[0].id2name                            #this is going to have to be generalized
             attendant_list << position[3..position.length] + " = " + a.values[0]
         end
 
         (0..calendar.length - 1).each do
-            daily_attendants = attendant_list.shift(positions)
-            daily_attendants.insert(0,calendar.shift)
-            schedule << daily_attendants
+            daily_attendants = attendant_list.shift(positions)      #get all assignments for a day
+            daily_attendants.insert(0,calendar.shift)               #insert date at beginning of list
+            schedule << daily_attendants                            #add day's schedule to month view
         end
         schedule
     end
@@ -55,7 +51,6 @@ class Attendant
         if block_given?
             @attendants = yield(schedule_type)
         end
-        @@scheduled_optimized = @@scheduled
     end
 
     def get_attendant()
@@ -68,10 +63,7 @@ class Attendant
                 mode = :custom
                 if yield(candidate)
                     attendant = candidate
-                    Logs.debug("candidate = #{candidate}")
                     break
-                else
-                    Logs.debug("candidate for yield = #{candidate}")
                 end
             else
                 mode = :general
@@ -116,7 +108,7 @@ class Attendant
             pos
         end
 
-        def prioritize_attendants()
+        def prioritize_attendants()     #order attendants from least assigned to most assigned
             attendants = []
             (0..@attendants.length).each do |counter|
                 @attendants.each {|candidate| attendants << candidate if @@scheduled.count_candidates(candidate) <= counter && !attendants.include?(candidate)}
@@ -124,7 +116,7 @@ class Attendant
             attendants
         end
         
-        def self.optimize_schedule()
+        def self.optimize_schedule()    #preserve data with lowest occurance of DEFAULT_ATTENDANT
             if @@scheduled_optimized == [] ||
                @@scheduled_optimized.count_candidates(DEFAULT_ATTENDANT) > @@scheduled.count_candidates(DEFAULT_ATTENDANT)
                 @@scheduled_optimized = @@scheduled.dup

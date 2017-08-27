@@ -1,7 +1,5 @@
-$LOAD_PATH << 'attendants'
 require 'attendant_processes'
 require 'attendant'
-require 'sound'
 require 'consecutive_days'
 
 module Prep_schedule
