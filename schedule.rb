@@ -5,9 +5,9 @@ class Monthly_Schedule
     include Schedule_helper
 
     attr_reader :schedule
-    def initialize(prep_schedule, year, month, schedule_days = [], rerun_max)
+    def initialize(prep_schedule, year, month, positions, rerun_max, schedule_days)
         @prep_schedule = prep_schedule
-        @positions = prep_schedule::POSITIONS
+        @positions = positions
         @year = year
         @month = month
         @schedule_days = schedule_days
