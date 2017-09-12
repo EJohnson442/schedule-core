@@ -5,7 +5,7 @@ class Monthly_Schedule
     include Schedule_helper
 
     attr_reader :schedule
-    def initialize(prep_schedule, year, month, positions, rerun_max, schedule_days)
+    def initialize(prep_schedule, positions, rerun_max, schedule_days, year, month)
         @prep_schedule = prep_schedule
         @positions = positions
         @year = year
@@ -34,7 +34,7 @@ class Monthly_Schedule
         def select_attendant(schedule_type, day)
             cur_attendant = ''
             @attendant_classes.data.each do |data|
-                if data.schedule_type == schedule_type  # Get attendant from appropriate list
+                if data.schedule_type == schedule_type      #Get attendant from appropriate list
                     if data.respond_to?('custom_attendant')
                         cur_attendant = data.custom_attendant(day)
                     else

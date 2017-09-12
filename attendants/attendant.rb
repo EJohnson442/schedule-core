@@ -118,7 +118,7 @@ class Attendant
         
         def self.optimize_schedule()    #preserve data with lowest occurance of DEFAULT_ATTENDANT
             if @@scheduled_optimized == [] ||
-               @@scheduled_optimized.count_candidates(DEFAULT_ATTENDANT) > @@scheduled.count_candidates(DEFAULT_ATTENDANT)
+                @@scheduled_optimized.count_candidates(DEFAULT_ATTENDANT) > @@scheduled.count_candidates(DEFAULT_ATTENDANT)
                 @@scheduled_optimized = @@scheduled.dup
             end
         end

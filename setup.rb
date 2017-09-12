@@ -1,11 +1,12 @@
 require 'attendant_processes'
 require 'attendant'
 require 'consecutive_days'
+require_relative 'config'
+require_relative 'logging'
 
 module Prep_schedule
     include Attendant_data
-
-    POSITIONS = [:ST_SOUND, :ST_SOUND, :ST_STAGE, :ST_MICROPHONE, :ST_MICROPHONE, :ST_SEATING, :ST_SEATING, :ST_PARKING_LOT, :ST_PARKING_LOT, :ST_LOBBY]
+    include Config
 
     class Attendant_data_classes
         attr_reader :data
@@ -13,7 +14,21 @@ module Prep_schedule
         def initialize(positions)
             @data = []
             positions.uniq.each { |p| @data << create_attendant_classes(p) }
-            @data
+            if defined? Config.consecutive_days
+                config_consecutive_days()
+            else
+                @data
+            end
+        end
+
+        def config_consecutive_days()
+            @data.map do |d|
+                Config.consecutive_days.each do |k,v| 
+                    if d.schedule_type == k.to_sym
+                        d.consecutive_days = v
+                    end
+                end
+            end
         end
 
         def create_attendant_classes(position)
