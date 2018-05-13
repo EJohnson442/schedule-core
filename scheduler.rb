@@ -19,3 +19,4 @@ showdata(ms.schedule)
 puts ""
 puts "details = #{Attendant.scheduled}"
 puts ""
+ 

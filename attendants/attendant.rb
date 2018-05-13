@@ -21,21 +21,18 @@ class Attendant
     end
 
     def self.data_reset()
-        optimize_schedule()
+        keep_best_data_run()
         @@scheduled.clear
-    end
-
-    def self.optimized_schedule()
-        @@scheduled_optimized == [] ? @@scheduled : @@scheduled_optimized
     end
 
     def self.to_calendar(calendar, positions)
         schedule = []
-        attendants = optimized_schedule()
+        @@scheduled_optimized == [] ? attendants = @@scheduled : attendants = @@scheduled_optimized
         attendant_list = []
         attendants.each do |a|                                      #TO DO!!!!!
-            position = a.keys[0].id2name                            #this is going to have to be generalized
+            position = a.keys[0].id2name                            #ACT - this is going to have to be generalized, paramertized OR pushed down into the subclass (it should know how to pack/unpack names)
             attendant_list << position[3..position.length] + " = " + a.values[0]
+            #attendant_list << position + " = " + a.values[0]
         end
 
         (0..calendar.length - 1).each do
@@ -67,7 +64,7 @@ class Attendant
                 end
             else
                 mode = :general
-                if is_valid(candidate) {Valid::Validation.new().is_valid()}
+                if is_valid(candidate)
                     attendant = candidate
                     break
                 end
@@ -83,14 +80,14 @@ class Attendant
     end
 
     protected
-        def is_valid(candidate, &block)
+        def is_valid(candidate)
             Valid::Validation.monthly_assignments = self.class.monthly_assignments
             Valid::Validation.candidate = candidate
             Valid::Validation.schedule_type = @schedule_type
             Valid::Validation.max_assigned_to_task = self.class.max_assigned_to_task
             Valid::Validation.scheduled = @@scheduled
             Valid::Validation.weekly_assignments = self.class.weekly_assignments
-            yield
+            Valid::Validation.new().is_valid()
         end
 
         def @@scheduled.count_candidates(candidate, schedule_type = nil)
@@ -116,7 +113,7 @@ class Attendant
             attendants
         end
         
-        def self.optimize_schedule()    #preserve data with lowest occurance of DEFAULT_ATTENDANT
+        def self.keep_best_data_run()    #preserve data with lowest occurance of DEFAULT_ATTENDANT
             if @@scheduled_optimized == [] ||
                 @@scheduled_optimized.count_candidates(DEFAULT_ATTENDANT) > @@scheduled.count_candidates(DEFAULT_ATTENDANT)
                 @@scheduled_optimized = @@scheduled.dup

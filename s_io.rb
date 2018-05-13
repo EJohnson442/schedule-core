@@ -9,7 +9,7 @@ class Schedules_IO
     end
     
     def write_schedule(filename, calendar, schedule)
-        open(filename, 'w') {|f| f.puts to_json(calendar, schedule)}
+        open(filename, 'w') {|f| f.puts to_(calendar, schedule)}
     end
 
     def read_schedule(filename)
@@ -25,7 +25,7 @@ class Schedules_IO
     
     private
         #write_schedules
-        def to_json(calendar, schedule)
+        def to_(calendar, schedule)
             hash_schedule = {}
             daily_assignments = schedule.length / calendar.length
             calendar.each{|day| hash_schedule[day] = hash_roster(schedule.shift(daily_assignments))}

@@ -15,3 +15,5 @@ scheduled_days: [3,7]
 
 consecutive_days:
     ST_SOUND: 2
+
+data_dir: "data/"

@@ -3,13 +3,13 @@ require 'yaml'
 module Config
     extend self
     
-    attr_reader :config_data, :monthly_assignments, :weekly_assignments, :max_assigned_to_task, :rerun_max, :month, :year, :positions, :scheduled_days, :consecutive_days
+    attr_reader :config_data, :monthly_assignments, :weekly_assignments, :max_assigned_to_task, :rerun_max, :month, :year, :positions, :scheduled_days, :consecutive_days, :data_dir
 
     def included(klass)
-        load(File.open('./data/config.yml')) if @config_data == nil
+        load_config(File.open('./data/config.yml')) if @config_data == nil
     end
 
-    def load(config_source)
+    def load_config(config_source)
         @config_data = YAML::load(File.open(config_source))
         @monthly_assignments = @config_data['monthly_assignments']
         @weekly_assignments = @config_data['weekly_assignments']
@@ -20,5 +20,6 @@ module Config
         @positions = @config_data['positions'].map(&:to_sym)
         @scheduled_days = @config_data['scheduled_days']
         @consecutive_days = @config_data['consecutive_days']
+        @data_dir = @config_data['data_dir']
     end
 end

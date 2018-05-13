@@ -20,10 +20,10 @@ module Prep_schedule
                 @data
             end
         end
-
+        
         def config_consecutive_days()
             @data.map do |d|
-                Config.consecutive_days.each do |k,v| 
+                Config.consecutive_days.each do |k,v|
                     if d.schedule_type == k.to_sym
                         d.consecutive_days = v
                     end
@@ -32,12 +32,12 @@ module Prep_schedule
         end
 
         def create_attendant_classes(position)
-            position == :ST_SOUND ? attendant_class = Consecutive_days : attendant_class = Attendant
+            Config.consecutive_days.has_key?(position.to_s) ? attendant_class = Consecutive_days : attendant_class = Attendant
             attendant_class.new(position) {|f| load_data(f)}
         end
 
         def load_data(position)
-            Attendant_data.load_file_data("data/" << position.to_s.slice(3..-1).capitalize << ".dat")
+            Attendant_data.load_file_data(Config.data_dir + position.to_s.slice(3..-1).capitalize + ".dat")
         end
     end
 end
