@@ -1,7 +1,7 @@
 require 'date'
 
 module Schedule_helper  #Rename Calendar_helper
-#    MON = 1             #THESE DATE VARIABLES MAYBE DUPLICATING WORK DONE BY RUBY
+#    MON = 1            #THESE DATE VARIABLES MAYBE DUPLICATING WORK DONE BY RUBY
 #    TUE = 2
 #    WED = 3
 #    THU = 4

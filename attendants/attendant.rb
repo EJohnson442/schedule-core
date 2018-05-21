@@ -1,8 +1,9 @@
-require_relative 'validations'
+require_relative 'validation'
 require_relative 'attendant_processes'
 require 'logging'
 
 class Attendant
+    include Validator
     attr_reader :schedule_type, :attendants
 
     #I want this assignment to be true everywhere. This needs to be done at another level. Should it be done through a config file
@@ -64,7 +65,7 @@ class Attendant
                 end
             else
                 mode = :general
-                if is_valid(candidate)
+                if is_valid(candidate) {|v| validate(v)}
                     attendant = candidate
                     break
                 end
@@ -81,13 +82,8 @@ class Attendant
 
     protected
         def is_valid(candidate)
-            Valid::Validation.monthly_assignments = self.class.monthly_assignments
-            Valid::Validation.candidate = candidate
-            Valid::Validation.schedule_type = @schedule_type
-            Valid::Validation.max_assigned_to_task = self.class.max_assigned_to_task
-            Valid::Validation.scheduled = @@scheduled
-            Valid::Validation.weekly_assignments = self.class.weekly_assignments
-            Valid::Validation.new().is_valid()
+            data = Validator.validate_data.new(self.class.monthly_assignments,candidate,@schedule_type,self.class.max_assigned_to_task,@@scheduled,self.class.weekly_assignments)
+            yield(data)
         end
 
         def @@scheduled.count_candidates(candidate, schedule_type = nil)
