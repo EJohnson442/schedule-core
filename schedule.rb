@@ -1,5 +1,6 @@
 require 'date'
 require 'logger'
+require_relative 'utils'
 
 module Schedule_maker
     extend self
@@ -8,7 +9,7 @@ module Schedule_maker
     attr_reader :schedule_data, :assignments
 
     class Monthly_Schedule
-        include Schedule_helper
+        include Calendar_formats
 
         attr_reader :schedule
         def initialize(schedule_data)
@@ -31,7 +32,8 @@ module Schedule_maker
                 rerun = Attendant.scheduled.count_candidates(Attendant::DEFAULT_ATTENDANT)
             end while rerun
             @assignments = Attendant.scheduled
-            @schedule = Attendant.to_calendar(calendar, @schedule_data.positions.length)
+            text_calendar = Text_calendar.new(calendar,@schedule_data.positions, Attendant.scheduled)
+            text_calendar.generate_calendar()
         end
 
         protected

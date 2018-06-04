@@ -8,14 +8,12 @@ rerun_max: 5
 month: 7
 year: 2017
 
-#positions: [ST_SOUND, ST_SOUND, ST_STAGE, ST_MICROPHONE, ST_MICROPHONE, ST_SEATING, ST_SEATING, ST_PARKING_LOT, ST_PARKING_LOT, ST_LOBBY]
 positions: [SOUND, SOUND, STAGE, MICROPHONE, MICROPHONE, SEATING, SEATING, PARKING_LOT, PARKING_LOT, LOBBY]
 
 #scheduled days = MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6, SUN: 7
 scheduled_days: [3,7]
 
 consecutive_days:
-    #ST_SOUND: 2
     SOUND: 2
 
 data_dir: "data/"

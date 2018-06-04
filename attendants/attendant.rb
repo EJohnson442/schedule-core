@@ -25,23 +25,6 @@ class Attendant
         @@scheduled.clear
     end
 
-    def self.to_calendar(calendar, positions)
-        schedule = []
-        @@scheduled_optimized == [] ? attendants = @@scheduled : attendants = @@scheduled_optimized
-        attendant_list = []
-        attendants.each do |a|                                      #TO DO!!!!!
-            position = a.keys[0].id2name                            #ACT - this is going to have to be generalized, paramertized OR pushed down into the subclass (it should know how to pack/unpack names)
-            attendant_list << position + " = " + a.values[0]
-        end
-
-        (0..calendar.length - 1).each do
-            daily_attendants = attendant_list.shift(positions)      #get all assignments for a day
-            daily_attendants.insert(0,calendar.shift)               #insert date at beginning of list
-            schedule << daily_attendants                            #add day's schedule to month view
-        end
-        schedule
-    end
-
     def initialize(schedule_type)
         @schedule_type = schedule_type
         if block_given?

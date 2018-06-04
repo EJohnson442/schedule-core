@@ -30,11 +30,11 @@ module Prep_schedule
 
         def create_attendant_classes(position)
             Config.consecutive_days.has_key?(position.to_s) ? attendant_class = Consecutive_days : attendant_class = Attendant
+            #attendant_class.new(position) {|f| load_data(Config.data_dir + f.to_s.capitalize + ".dat")}
             attendant_class.new(position) {|f| load_data(f)}
         end
 
         def load_data(position)
-            #load_file_data(Config.data_dir + position.to_s.slice(3..-1).capitalize + ".dat")
             load_file_data(Config.data_dir + position.to_s.capitalize + ".dat")
         end
         
