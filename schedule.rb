@@ -32,8 +32,16 @@ module Schedule_maker
                 rerun = Attendant.scheduled.count_candidates(Attendant::DEFAULT_ATTENDANT)
             end while rerun
             @assignments = Attendant.scheduled
-            text_calendar = Text_calendar.new(calendar,@schedule_data.positions, Attendant.scheduled)
-            text_calendar.generate_calendar()
+        end
+            
+        def generate_calendar(json = false)
+            if json
+                json_calendar = JSON_calendar.new(reset_calendar(true), Attendant.scheduled)
+                json_calendar.generate_calendar()
+            else
+                raw_calendar = Raw_calendar.new(reset_calendar(true), @schedule_data.positions, Attendant.scheduled)
+                raw_calendar.generate_calendar()
+            end
         end
 
         protected
@@ -57,8 +65,8 @@ module Schedule_maker
                 calendar
             end
 
-            def reset_calendar()
-                @attendant_classes = @schedule_data.prep_schedule::Attendant_data_classes.new(@schedule_data.positions)
+            def reset_calendar(calendar_only = false)
+                @attendant_classes = @schedule_data.prep_schedule::Attendant_data_classes.new(@schedule_data.positions) if !calendar_only
                 gen_calendar(@schedule_data.year,@schedule_data.month,@schedule_data.schedule_days) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday] + " " + d.to_s}
             end
     end

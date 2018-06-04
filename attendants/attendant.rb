@@ -17,7 +17,8 @@ class Attendant
 
     #access class variables
     def self.scheduled()
-        @@scheduled.clone
+        #@@scheduled.clone
+        @@scheduled_optimized.clone
     end
 
     def self.data_reset()
