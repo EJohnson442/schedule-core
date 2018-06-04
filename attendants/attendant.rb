@@ -1,5 +1,4 @@
 require_relative 'validation'
-require_relative 'attendant_processes'
 require 'logging'
 
 class Attendant
@@ -32,8 +31,7 @@ class Attendant
         attendant_list = []
         attendants.each do |a|                                      #TO DO!!!!!
             position = a.keys[0].id2name                            #ACT - this is going to have to be generalized, paramertized OR pushed down into the subclass (it should know how to pack/unpack names)
-            attendant_list << position[3..position.length] + " = " + a.values[0]
-            #attendant_list << position + " = " + a.values[0]
+            attendant_list << position + " = " + a.values[0]
         end
 
         (0..calendar.length - 1).each do
@@ -82,8 +80,8 @@ class Attendant
 
     protected
         def is_valid(candidate)
-            data = Validator.validate_data.new(self.class.monthly_assignments,candidate,@schedule_type,self.class.max_assigned_to_task,@@scheduled,self.class.weekly_assignments)
-            yield(data)
+            validate_data = Validator.validate_data.new(self.class.monthly_assignments,candidate,@schedule_type,self.class.max_assigned_to_task,@@scheduled,self.class.weekly_assignments)
+            yield(validate_data)
         end
 
         def @@scheduled.count_candidates(candidate, schedule_type = nil)

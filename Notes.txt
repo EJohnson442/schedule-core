@@ -30,5 +30,4 @@ The following variables are located in attendant.rb and their values should be c
             - it's probably always to have an attr_accessor for any configurable data?
                 - Question: does it make sense to create variables that can only be set through configuration files?
                 
-            
-        
+05.22.2018 Convert application to work exclusively with json data format!

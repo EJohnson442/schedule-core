@@ -1,11 +1,8 @@
-require 'attendant_processes'
-require 'attendant'
 require 'consecutive_days'
 require_relative 'config'
 require_relative 'logging'
 
 module Prep_schedule
-    include Attendant_data
     include Config
 
     class Attendant_data_classes
@@ -37,7 +34,18 @@ module Prep_schedule
         end
 
         def load_data(position)
-            Attendant_data.load_file_data(Config.data_dir + position.to_s.slice(3..-1).capitalize + ".dat")
+            #load_file_data(Config.data_dir + position.to_s.slice(3..-1).capitalize + ".dat")
+            load_file_data(Config.data_dir + position.to_s.capitalize + ".dat")
+        end
+        
+        def load_file_data(full_filename)
+            data = []
+            File.open(full_filename, "r") do |f|
+                f.each_line do |line|
+                    line.include?("\n") ? data << line.chop! : data << line
+                end
+            end
+            data.shuffle!
         end
     end
 end

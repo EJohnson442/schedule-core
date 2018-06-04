@@ -19,7 +19,7 @@ class Schedules_IO
                 line.include?("\n") ? data_file << line.chop! : data_file << line
             end
         end
-        
+
         to_array(data_file)
     end
     

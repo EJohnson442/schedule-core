@@ -4,8 +4,8 @@ require 'logger'
 module Schedule_maker
     extend self
 
-    @schedule_data = Struct.new(:prep_schedule, :positions, :rerun_max, :schedule_days, :year, :month)
-    attr_reader :schedule_data
+    @schedule_data = Struct.new(:prep_schedule, :positions, :rerun_max, :schedule_days, :year, :month, :monthly_assignments, :max_assigned_to_task)
+    attr_reader :schedule_data, :assignments
 
     class Monthly_Schedule
         include Schedule_helper
@@ -13,6 +13,9 @@ module Schedule_maker
         attr_reader :schedule
         def initialize(schedule_data)
             @schedule_data = schedule_data
+            Attendant.monthly_assignments = @schedule_data.monthly_assignments
+            Attendant.weekly_assignments = @schedule_data.positions.count
+            Attendant.max_assigned_to_task = @schedule_data.max_assigned_to_task
             make_schedule(@schedule_data.rerun_max)
         end
 
@@ -27,6 +30,7 @@ module Schedule_maker
                 break if rerun_max <= rerun_count += 1
                 rerun = Attendant.scheduled.count_candidates(Attendant::DEFAULT_ATTENDANT)
             end while rerun
+            @assignments = Attendant.scheduled
             @schedule = Attendant.to_calendar(calendar, @schedule_data.positions.length)
         end
 
@@ -34,14 +38,21 @@ module Schedule_maker
             def select_attendant(schedule_type, day)
                 @attendant_classes.data.each do |data|
                     if data.schedule_type == schedule_type      #Get attendant from appropriate list
-                        if data.respond_to?('get_custom_attendant')
-                            data.get_custom_attendant(day)      #QRY - Why isn't the parameter day needed in both here and get_attendant?????
-                        else
-                            data.get_attendant()
-                        end
+                        data.respond_to?('get_custom_attendant') ? data.get_custom_attendant(day) : data.get_attendant()
                         break
                     end
                 end
+            end
+
+            def gen_calendar(year, month, days_of_week = [])
+                calendar = []
+                day = 0
+                until !Date.valid_date?(year,month,day += 1)
+                    if days_of_week.include?(Date.new(year,month,day).cwday) || days_of_week == []
+                        block_given? ? calendar << yield(year,month,day) : calendar << day.to_s
+                    end
+                end
+                calendar
             end
 
             def reset_calendar()
