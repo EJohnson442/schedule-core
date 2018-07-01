@@ -2,7 +2,7 @@ require 'attendant'
 require 'logging'
 
 class Consecutive_days < Attendant
-    attr_accessor :consecutive_days
+    attr_accessor :consecutive_days #this is being used but it's redundant and this needs to change
     
     class << self
         attr_accessor :cdays_attendants

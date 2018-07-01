@@ -2,23 +2,19 @@ require_relative 'validation'
 require 'logging'
 
 class Attendant
-    include Validator
     attr_reader :schedule_type, :attendants
 
-    #I want this assignment to be true everywhere. This needs to be done at another level. Should it be done through a config file
-    #or is there a better way???? Maybe this could be aa gloal variable and not require lookup in a config file
     DEFAULT_ATTENDANT = "unresolved"
     
     @@scheduled_optimized = @@scheduled = []
 
     class << self                   #Class instance variables
-        attr_accessor :weekly_assignments, :monthly_assignments, :max_assigned_to_task
+        attr_accessor :total_positions, :monthly_assignments, :max_assigned_to_task
     end
 
     #access class variables
     def self.scheduled()
-        #@@scheduled.clone
-        @@scheduled_optimized.clone
+        @@scheduled_optimized = [] ? @@scheduled.clone : @@scheduled_optimized.clone
     end
 
     def self.data_reset()
@@ -47,7 +43,7 @@ class Attendant
                 end
             else
                 mode = :general
-                if is_valid(candidate) {|v| validate(v)}
+                if is_valid(candidate) {|v| Validator.validate(v)}
                     attendant = candidate
                     break
                 end
@@ -64,7 +60,7 @@ class Attendant
 
     protected
         def is_valid(candidate)
-            validate_data = Validator.validate_data.new(self.class.monthly_assignments,candidate,@schedule_type,self.class.max_assigned_to_task,@@scheduled,self.class.weekly_assignments)
+            validate_data = Validator::VALIDATE_DATA.new(self.class.monthly_assignments,candidate,@schedule_type,self.class.max_assigned_to_task,@@scheduled,self.class.total_positions)
             yield(validate_data)
         end
 

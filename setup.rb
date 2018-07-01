@@ -11,26 +11,10 @@ module Prep_schedule
         def initialize(positions)
             @data = []
             positions.uniq.each { |p| @data << create_attendant_classes(p) }
-            if defined? Config.consecutive_days
-                config_consecutive_days()
-            else
-                @data
-            end
-        end
-        
-        def config_consecutive_days()
-            @data.map do |d|
-                Config.consecutive_days.each do |k,v|
-                    if d.schedule_type == k.to_sym
-                        d.consecutive_days = v
-                    end
-                end
-            end
         end
 
         def create_attendant_classes(position)
             Config.consecutive_days.has_key?(position.to_s) ? attendant_class = Consecutive_days : attendant_class = Attendant
-            #attendant_class.new(position) {|f| load_data(Config.data_dir + f.to_s.capitalize + ".dat")}
             attendant_class.new(position) {|f| load_data(f)}
         end
 

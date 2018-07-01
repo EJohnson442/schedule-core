@@ -2,6 +2,9 @@ require 'date'
 require 'json'
 
 module Calendar_formats
+    FORMATS = [:raw, :json, :task]
+    CALENDAR_DATA = Struct.new(:fmt, :calendar, :positions, :attendants, :schedule)
+    
     Raw_calendar = Struct.new(:calendar, :positions, :attendants) do
         def generate_calendar()
             schedule = []
@@ -51,11 +54,30 @@ module Calendar_formats
             end
         end
     end
-        
-    def task_view_calendar(raw_calendar)
-        raw_calendar.each do |schedule_day|
-            schedule_day.each {|attendant| puts "#{attendant}"}
-            puts "\n"
+
+    Task_view_calendar = Struct.new(:calendar) do
+        def generate_calendar()
+            calendar.each do |schedule_day|
+                schedule_day.each {|attendant| puts "#{attendant}"}
+                puts "\n"
+            end
+
         end
+    end    
+    
+    def calendar(calendar_data)
+        calendar_run = nil
+        case calendar_data.fmt
+            when :raw
+                calendar_run = Raw_calendar.new(calendar_data.calendar, calendar_data.positions, calendar_data.attendants)
+            when :json
+                calendar_run = JSON_calendar.new(calendar_data.calendar, calendar_data.schedule)
+            when :task
+                raw_run = Raw_calendar.new(calendar_data.calendar, calendar_data.positions, calendar_data.attendants)
+                calendar_run = Task_view_calendar.new(raw_run.generate_calendar())
+            else    
+                raise RuntimeError.new("'generate_calendar' must be one of the following: #{FORMATS}") if !FORMATS.include?(calendar_data)
+        end
+        calendar_run.generate_calendar()
     end
 end

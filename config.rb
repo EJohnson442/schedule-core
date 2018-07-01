@@ -6,7 +6,7 @@ module Config
     attr_reader :config_data, :monthly_assignments, :weekly_assignments, :max_assigned_to_task, :rerun_max, :month, :year, :positions, :scheduled_days, :consecutive_days, :data_dir
 
     def included(klass)
-        load_config(File.open('./data/config.yml')) if @config_data == nil
+        load_config(File.open('config.yml')) if @config_data == nil
     end
 
     def load_config(config_source)

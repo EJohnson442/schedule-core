@@ -9,7 +9,9 @@ include Config
 include Schedule_maker
 include Calendar_formats
 
-schedule_data = Schedule_maker.schedule_data.new(Prep_schedule, Config.positions, Config.rerun_max, Config.scheduled_days, Config.year, Config.month, Config.monthly_assignments, Config.max_assigned_to_task)
-ms = Monthly_Schedule.new(schedule_data)
-rc = ms.generate_calendar()
-Calendar_formats::task_view_calendar(rc)
+#Run scheduler using config.yml
+#Replace Config with Scheduler::SCHEDULE_DATA struct to dynamically create schedules
+ms = Monthly_Schedule.new(Prep_schedule, Config)
+
+#p ms.generate_calendar(:json)
+ms.generate_calendar(:task)
