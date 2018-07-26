@@ -5,7 +5,7 @@ require_relative 'utils'
 module Schedule_maker
     extend self
 
-    SCHEDULE_DATA = Struct.new(:positions, :rerun_max, :scheduled_days, :consecutive_days, :year, :month, :monthly_assignments, :max_assigned_to_task)
+    SCHEDULE_DATA = Struct.new(:positions, :rerun_max, :scheduled_days, :consecutive_days, :year, :month, :monthly_assignments, :max_assigned_to_task, :position_class)
     attr_reader :schedule_data, :assignments
 
     class Monthly_Schedule
@@ -24,7 +24,7 @@ module Schedule_maker
 
         def generate_calendar(calendar_run)
             begin
-                calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @config.positions, Attendant.scheduled, Attendant.scheduled)
+                calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @config.positions, Attendant.scheduled)
                 calendar(calendar_data)
             rescue => e
                 puts e.message

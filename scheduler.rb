@@ -5,13 +5,20 @@ require_relative 'schedule'
 require_relative 'config'
 require_relative 'utils'
 
-include Config
-include Schedule_maker
-include Calendar_formats
+module Schedules
+    extend self
 
-#Run scheduler using config.yml
-#Replace Config with Scheduler::SCHEDULE_DATA struct to dynamically create schedules
-ms = Monthly_Schedule.new(Prep_schedule, Config)
+    include Config
+    include Schedule_maker
+    include Calendar_formats
 
-#p ms.generate_calendar(:json)
-ms.generate_calendar(:task)
+    def generate(calendar = :task, month = Time.now.month, year = Time.now.year)
+        Config::month = month
+        Config::year = year
+
+        ms = Monthly_Schedule.new(Prep_schedule, Config)
+        ms.generate_calendar(calendar)
+    end
+end
+
+p Schedules.generate()

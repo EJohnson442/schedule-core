@@ -2,10 +2,10 @@ require 'date'
 require 'json'
 
 module Calendar_formats
-    FORMATS = [:raw, :json, :task]
-    CALENDAR_DATA = Struct.new(:fmt, :calendar, :positions, :attendants, :schedule)
+    FORMATS = [:native, :json, :task]
+    CALENDAR_DATA = Struct.new(:fmt, :calendar, :positions, :schedule)
     
-    Raw_calendar = Struct.new(:calendar, :positions, :attendants) do
+    Native_calendar = Struct.new(:calendar, :positions, :attendants) do
         def generate_calendar()
             schedule = []
             attendant_list = []
@@ -27,7 +27,7 @@ module Calendar_formats
         def generate_calendar()
             hash_schedule = {}
             daily_assignments = schedule.length / calendar.length
-            calendar.each{|day| hash_schedule[day] = hash_roster(schedule.shift(daily_assignments))}
+            calendar.each{|day| hash_schedule[day] = hash_roster(schedule.shift(daily_assignments))}     #problem is here
             JSON.generate(hash_schedule)
         end
         
@@ -57,26 +57,26 @@ module Calendar_formats
 
     Task_view_calendar = Struct.new(:calendar) do
         def generate_calendar()
+            schedule = []
             calendar.each do |schedule_day|
-                schedule_day.each {|attendant| puts "#{attendant}"}
-                puts "\n"
+                schedule_day.each {|attendant| schedule << "#{attendant}"}
+                schedule << " "
             end
-
         end
-    end    
-    
+    end
+
     def calendar(calendar_data)
         calendar_run = nil
         case calendar_data.fmt
-            when :raw
-                calendar_run = Raw_calendar.new(calendar_data.calendar, calendar_data.positions, calendar_data.attendants)
+            when :native
+                calendar_run = Native_calendar.new(calendar_data.calendar, calendar_data.positions, calendar_data.schedule)
             when :json
                 calendar_run = JSON_calendar.new(calendar_data.calendar, calendar_data.schedule)
             when :task
-                raw_run = Raw_calendar.new(calendar_data.calendar, calendar_data.positions, calendar_data.attendants)
-                calendar_run = Task_view_calendar.new(raw_run.generate_calendar())
+                native_run = Native_calendar.new(calendar_data.calendar, calendar_data.positions, calendar_data.schedule)
+                calendar_run = Task_view_calendar.new(native_run.generate_calendar())
             else    
-                raise RuntimeError.new("'generate_calendar' must be one of the following: #{FORMATS}") if !FORMATS.include?(calendar_data)
+                raise RuntimeError.new("'generate_calendar' must be one of the following: #{FORMATS}")
         end
         calendar_run.generate_calendar()
     end
