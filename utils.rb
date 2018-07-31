@@ -3,9 +3,9 @@ require 'json'
 
 module Calendar_formats
     FORMATS = [:native, :json, :task]
-    CALENDAR_DATA = Struct.new(:fmt, :calendar, :positions, :schedule)
+    CALENDAR_DATA = Struct.new(:fmt, :calendar, :daily_task_list, :schedule)
     
-    Native_calendar = Struct.new(:calendar, :positions, :attendants) do
+    Native_calendar = Struct.new(:calendar, :daily_task_list, :attendants) do
         def generate_calendar()
             schedule = []
             attendant_list = []
@@ -15,7 +15,7 @@ module Calendar_formats
             end
 
             (0..calendar.length - 1).each do
-                daily_attendants = attendant_list.shift(positions.length)
+                daily_attendants = attendant_list.shift(daily_task_list.length)
                 daily_attendants.insert(0,calendar.shift)
                 schedule << daily_attendants
             end
@@ -69,11 +69,11 @@ module Calendar_formats
         calendar_run = nil
         case calendar_data.fmt
             when :native
-                calendar_run = Native_calendar.new(calendar_data.calendar, calendar_data.positions, calendar_data.schedule)
+                calendar_run = Native_calendar.new(calendar_data.calendar, calendar_data.daily_task_list, calendar_data.schedule)
             when :json
                 calendar_run = JSON_calendar.new(calendar_data.calendar, calendar_data.schedule)
             when :task
-                native_run = Native_calendar.new(calendar_data.calendar, calendar_data.positions, calendar_data.schedule)
+                native_run = Native_calendar.new(calendar_data.calendar, calendar_data.daily_task_list, calendar_data.schedule)
                 calendar_run = Task_view_calendar.new(native_run.generate_calendar())
             else    
                 raise RuntimeError.new("'generate_calendar' must be one of the following: #{FORMATS}")

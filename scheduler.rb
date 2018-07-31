@@ -1,11 +1,11 @@
 $LOAD_PATH << File.dirname(__FILE__)
-$LOAD_PATH << 'attendants'
+$LOAD_PATH << 'work'
 require_relative 'setup'
 require_relative 'schedule'
 require_relative 'config'
 require_relative 'utils'
 
-module Schedules
+module Scheduler
     extend self
 
     include Config
@@ -21,4 +21,4 @@ module Schedules
     end
 end
 
-p Schedules.generate()
+p Scheduler.generate()

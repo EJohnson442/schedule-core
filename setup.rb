@@ -8,18 +8,18 @@ module Prep_schedule
     class Attendant_data_classes
         attr_reader :data
 
-        def initialize(positions)
+        def initialize(daily_task_list)
             @data = []
-            positions.uniq.each { |p| @data << create_attendant_classes(p) }
+            daily_task_list.uniq.each { |p| @data << create_attendant_classes(p) }
         end
 
-        def create_attendant_classes(position)
-            Config.consecutive_days.has_key?(position.to_s) ? attendant_class = Consecutive_days : attendant_class = Attendant
-            attendant_class.new(position) {|f| load_data(f)}
+        def create_attendant_classes(task)
+            attendant_class = Config::get_class_by_task(task, Config::WORKER_REGISTRY)
+            attendant_class.new(task) {|f| load_data(f)}
         end
 
-        def load_data(position)
-            load_file_data(Config.data_dir + position.to_s.capitalize + ".dat")
+        def load_data(task)
+            load_file_data(Config.data_dir + task.to_s.capitalize + ".dat")
         end
         
         def load_file_data(full_filename)

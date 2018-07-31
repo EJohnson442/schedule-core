@@ -1,22 +1,20 @@
 #attendant.rb
-monthly_assignments: 4
-weekly_assignments: 10
-max_assigned_to_task: 2
+max_monthly_assignments: 4
+max_times_assigned_to_task: 2     #how many times can someone be assigned to a task per month
 
 #schedule.rb
 rerun_max: 5
 month: 7
 year: 2017
 
-positions: [SOUND, SOUND, STAGE, MICROPHONE, MICROPHONE, SEATING, SEATING, PARKING_LOT, PARKING_LOT, LOBBY]
+daily_task_list: [SOUND, SOUND, STAGE, MICROPHONE, MICROPHONE, SEATING, SEATING, PARKING_LOT, PARKING_LOT, LOBBY]
 
 #scheduled days = MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6, SUN: 7
 scheduled_days: [3,7]
 
-#Find a way to map positions to objects/classes!, i.e., consecutive_days => [SOUND]
 consecutive_days:
     SOUND: 2
 
-position_class: {Consecutive_days: SOUND, Attendant: [STAGE, MICROPHONE, SEATING, PARKING_LOT, LOBBY]} 
+position_class_map: {Consecutive_days: [SOUND, 2], Worker: [STAGE, MICROPHONE, SEATING, PARKING_LOT, LOBBY]}
 
 data_dir: "data/"
