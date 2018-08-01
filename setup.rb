@@ -14,7 +14,7 @@ module Prep_schedule
         end
 
         def create_attendant_classes(task)
-            attendant_class = Config::get_class_by_task(task, Config::WORKER_REGISTRY)
+            attendant_class = Config::worker_registry(task)
             attendant_class.new(task) {|f| load_data(f)}
         end
 

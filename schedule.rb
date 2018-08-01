@@ -49,9 +49,9 @@ module Schedule_maker
             def select_attendant(schedule_type, day)
                 @attendant_classes.data.each do |data|
                     if data.schedule_type == schedule_type
-                        if data.respond_to?('get_custom_attendant')
-                            data.consecutive_days = @config.consecutive_days[schedule_type.to_s]
-                            data.get_custom_attendant(day, @config.consecutive_days[schedule_type.to_s])
+                        if data.respond_to?('get_custom_worker')
+                            custom_data = Config::get_worker_data(data)
+                            data.get_custom_worker(day, custom_data[0])
                         else
                             data.get_worker()
                         end

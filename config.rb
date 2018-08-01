@@ -5,7 +5,6 @@ module Config
     
     WORKER_REGISTRY = [Worker, Consecutive_days]
     
-    #attr_accessor :max_monthly_assignments, :max_times_assigned_to_task, :rerun_max, :month, :year, :daily_task_list, :scheduled_days, :consecutive_days, :data_dir, :position_class, :extensions
     attr_accessor :max_monthly_assignments, :max_times_assigned_to_task, :rerun_max, :month, :year, :daily_task_list, :scheduled_days, :consecutive_days, :data_dir, :position_class_map
 
     def included(klass)
@@ -26,17 +25,29 @@ module Config
         @position_class_map = @config_data['position_class_map']
     end
     
-    #get_class_by_task2 = 
-    
-    def get_class_by_task(task, worker_registry)
-        use_class = nil
-        @position_class_map.each { |k,v| use_class = get_class(k,worker_registry) if v.include?(task.to_s)}
-        use_class
+    Worker_registry = Struct.new(:worker_registry, :position_class_map) do
+        def get_class_by_task(task)
+            use_class = nil
+            position_class_map.each { |k,v| use_class = get_class(k) if v.include?(task.to_s)}
+            use_class
+        end
+        
+        private
+            def get_class(task_class_name)
+                use_class = nil
+                worker_registry.each{ |c| use_class = c if task_class_name == c.to_s }
+                use_class
+            end
+    end
+
+    def worker_registry(task, worker_registry = Config::WORKER_REGISTRY, position_class_map = Config::position_class_map)
+        wr = Config::Worker_registry.new(Config::WORKER_REGISTRY, Config::position_class_map)
+        wr.get_class_by_task(task)
     end
     
-    def get_class(task, worker_registry)
-        use_class = nil
-        worker_registry.each{ |c| use_class = c if task == c.to_s }
-        use_class
+    def get_worker_data(worker_class, position_class_map = Config::position_class_map)
+        use_data = nil
+        position_class_map.each { |k,v| use_data = v[1..v.length - 1] if k == worker_class.class.to_s}
+        use_data
     end
 end

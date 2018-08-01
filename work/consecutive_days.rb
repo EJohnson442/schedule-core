@@ -2,25 +2,20 @@ require 'worker'
 require 'logging'
 
 class Consecutive_days < Worker
-    attr_accessor :consecutive_days #this is being used but it's redundant and this needs to change
-    
     class << self
         attr_accessor :worker_list
     end
 
-    #def initialize(schedule_type, consecutive_days = 2)
-    def initialize(schedule_type, consecutive_days = 2)
+    def initialize(schedule_type)
         super(schedule_type)
-        #@consecutive_days = consecutive_days
         @days_count = 0
         self.class.worker_list = []
         @index = -1
     end
 
-    #def get_custom_attendant(current_day)
-    def get_custom_attendant(*args)
-        new_day(args[0]) if @current_day != args[0]
+    def get_custom_worker(*args)
         @consecutive_days = args[1]
+        new_day(args[0]) if @current_day != args[0]
         if @days_count == 1                                     #first day
             worker = get_worker()
             self.class.worker_list << worker
