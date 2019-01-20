@@ -2,10 +2,11 @@ require_relative 'validation'
 require 'logging'
 
 class Worker
+    include Validator
     attr_reader :schedule_type, :workers
 
     DEFAULT_WORKER = "unresolved"
-    
+
     @@scheduled_optimized = @@scheduled = []
 
     class << self                   #Class instance variables
@@ -43,13 +44,13 @@ class Worker
                 end
             else
                 mode = :general
-                if is_valid(candidate) {|v| Validator.validate(v)}
+                if is_valid(candidate) {|v| validate(v)}
                     worker = candidate
                     break
                 end
             end
         end
-        
+
         schedule_worker(worker) if mode == :general
         worker
     end
@@ -60,7 +61,7 @@ class Worker
 
     protected
         def is_valid(candidate)
-            validate_data = Validator::VALIDATE_DATA.new(self.class.max_monthly_assignments,candidate,@schedule_type,self.class.max_times_assigned_to_task,@@scheduled,self.class.total_tasks, self.class.scheduled_days)
+            validate_data = VALIDATE_DATA.new(self.class.max_monthly_assignments,candidate,@schedule_type,self.class.max_times_assigned_to_task,@@scheduled,self.class.total_tasks, self.class.scheduled_days)
             yield(validate_data)
         end
 
@@ -86,7 +87,7 @@ class Worker
             end
             workers
         end
-        
+
         def self.keep_best_data_run()    #preserve data with lowest occurance of DEFAULT_WORKER
             if @@scheduled_optimized == [] ||
                 @@scheduled_optimized.count_candidates(DEFAULT_WORKER) > @@scheduled.count_candidates(DEFAULT_WORKER)

@@ -1,11 +1,12 @@
 require 'consecutive_days'
+require 'files_helper'
 require_relative 'config'
 require_relative 'logging'
 
 module Init_workers
-    include Config
 
     class Worker_data_classes
+        include Files_helper
         attr_reader :data
 
         def initialize(daily_task_list)
@@ -19,16 +20,11 @@ module Init_workers
         end
 
         def load_data(task)
-            load_file_data(Config.data_dir + task.to_s.capitalize + ".dat")
+            load_file_data(Config::config_data['data_dir'] + task.to_s.capitalize + ".dat")
         end
 
         def load_file_data(full_filename)
-            data = []
-            File.open(full_filename, "r") do |f|
-                f.each_line do |line|
-                    line.include?("\n") ? data << line.chop! : data << line
-                end
-            end
+            data = read_file_n2_array(full_filename)
             data.shuffle!
         end
     end

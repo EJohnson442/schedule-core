@@ -4,7 +4,7 @@ require 'json'
 module Calendar_formats
     FORMATS = [:native, :json, :task]
     CALENDAR_DATA = Struct.new(:fmt, :calendar, :daily_task_list, :schedule)
-    
+
     Native_calendar = Struct.new(:calendar, :daily_task_list, :attendants) do
         def generate_calendar()
             schedule = []
@@ -22,7 +22,7 @@ module Calendar_formats
             schedule
         end
     end
-    
+
     JSON_calendar = Struct.new(:calendar, :schedule) do
         def generate_calendar()
             hash_schedule = {}
@@ -30,7 +30,7 @@ module Calendar_formats
             calendar.each{|day| hash_schedule[day] = hash_roster(schedule.shift(daily_assignments))}     #problem is here
             JSON.generate(hash_schedule)
         end
-        
+
         def hash_roster(roster)
             roster_data = {}
             roster.each do |data|
@@ -42,7 +42,7 @@ module Calendar_formats
             end
             roster_data
         end
-        
+
         def manage_array(curr_value,new_value)
             if curr_value.class == Array
                 curr_value << new_value
@@ -75,7 +75,7 @@ module Calendar_formats
             when :task
                 native_run = Native_calendar.new(calendar_data.calendar, calendar_data.daily_task_list, calendar_data.schedule)
                 calendar_run = Task_view_calendar.new(native_run.generate_calendar())
-            else    
+            else
                 raise RuntimeError.new("'generate_calendar' must be one of the following: #{FORMATS}")
         end
         calendar_run.generate_calendar()

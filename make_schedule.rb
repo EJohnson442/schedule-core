@@ -1,24 +1,24 @@
 $LOAD_PATH << File.dirname(__FILE__)
 $LOAD_PATH << 'work'
+$LOAD_PATH << 'helpers'
 require_relative 'init_workers'
 require_relative 'scheduler'
 require_relative 'config'
-#require_relative 'utils'
 
 module Make_schedule
-    extend self
+  extend self
 
-    include Config
-    include Scheduler
-    include Calendar_formats
+  include Config
+  include Scheduler
+  include Calendar_formats
 
-    def generate(calendar = :task, month = Time.now.month, year = Time.now.year)
-        Config::month = month
-        Config::year = year
+  def generate(calendar = :task, month = Time.now.month, year = Time.now.year)
+    Config::month = month
+    Config::year = year
 
-        ms = Monthly_Schedule.new(Init_workers, Config)
-        ms.generate_calendar(calendar)
-    end
+    ms = Monthly_Schedule.new(Init_workers, Config)
+    ms.generate_calendar(calendar)
+  end
 end
 
 p Make_schedule.generate()

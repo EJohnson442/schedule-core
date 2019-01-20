@@ -1,28 +1,24 @@
 require 'json'
+require 'files_helper'
 
 class Schedules_IO
+    include Config
     attr_reader :schedule, :schedule_dates
 
     def initialize()
         @schedule_dates = []
         @schedule = []
     end
-    
+
     def write_schedule(filename, calendar, schedule)
         open(filename, 'w') {|f| f.puts to_(calendar, schedule)}
     end
 
     def read_schedule(filename)
-        data_file = []
-        open(filename, "r") do |f|
-            f.each_line do |line|
-                line.include?("\n") ? data_file << line.chop! : data_file << line
-            end
-        end
-
-        to_array(data_file)
+        data = read_file_n2_array(full_filename)
+        to_array(data)  #why am i doing this???
     end
-    
+
     private
         #write_schedules
         def to_(calendar, schedule)
@@ -31,7 +27,7 @@ class Schedules_IO
             calendar.each{|day| hash_schedule[day] = hash_roster(schedule.shift(daily_assignments))}
             JSON.generate(hash_schedule)
         end
-        
+
         def hash_roster(roster)
             roster_data = {}
             roster.each do |data|
@@ -43,7 +39,7 @@ class Schedules_IO
             end
             roster_data
         end
-        
+
         def manage_array(curr_value,new_value)
             if curr_value.class == Array
                 curr_value << new_value
@@ -54,12 +50,12 @@ class Schedules_IO
                 curr_value = arr_value
             end
         end
-        
+
         #read_schedules
         def to_array(data_file)
             data_string = data_file[0].to_s
             hash_data = JSON.parse(data_string)
-            
+
             hash_data.each do |key, value|
                 @schedule_dates << key
                 schedules(value)
