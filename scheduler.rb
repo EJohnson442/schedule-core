@@ -1,3 +1,4 @@
+require 'worker_helper'
 require 'date'
 require 'logger'
 require_relative 'calendar_formats'
@@ -9,12 +10,12 @@ module Scheduler
     attr_reader :schedule_data, :assignments
 
     class Monthly_Schedule
+        include Worker_helper
         include Calendar_formats
 
         attr_reader :schedule
 
-        def initialize(prep_schedule, config)
-            @prep_schedule = prep_schedule
+        def initialize(config)
             @config = config.config_data
             @daily_task_list = @config['daily_task_list'].map(&:to_sym)
             Worker.max_monthly_assignments = @config['max_monthly_assignments']
@@ -48,7 +49,7 @@ module Scheduler
             end
 
             def select_attendant(schedule_type, day)
-                @attendant_classes.data.each do |data|
+                @worker_classes.data.each do |data|
                     if data.schedule_type == schedule_type
                         if data.respond_to?('get_custom_worker')
                             custom_data = Config::get_worker_data(data)
@@ -73,7 +74,7 @@ module Scheduler
             end
 
             def initialize_calendar(prep_schedule = true)
-                @attendant_classes = @prep_schedule::Worker_data_classes.new(@daily_task_list) if prep_schedule
+                @worker_classes = Worker_data_classes.new(@daily_task_list)
                 gen_calendar(@config['year'],@config['month'],@config['scheduled_days']) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday] + " " + d.to_s}
             end
     end

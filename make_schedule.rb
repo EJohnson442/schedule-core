@@ -1,7 +1,6 @@
 $LOAD_PATH << File.dirname(__FILE__)
 $LOAD_PATH << 'work'
 $LOAD_PATH << 'helpers'
-require_relative 'init_workers'
 require_relative 'scheduler'
 require_relative 'config'
 
@@ -16,7 +15,7 @@ module Make_schedule
     Config::month = month
     Config::year = year
 
-    ms = Monthly_Schedule.new(Init_workers, Config)
+    ms = Monthly_Schedule.new(Config)
     ms.generate_calendar(calendar)
   end
 end
