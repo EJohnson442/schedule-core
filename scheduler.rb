@@ -6,14 +6,14 @@ require_relative 'calendar_formats'
 module Scheduler
   extend self
 
-  SCHEDULE_DATA = Struct.new(:daily_task_list, :rerun_max, :scheduled_days, :consecutive_days, :year, :month, :max_monthly_assignments, :max_times_assigned_to_task, :position_class)
-  attr_reader :schedule_data, :assignments
+  #SCHEDULE_DATA = Struct.new(:daily_task_list, :rerun_max, :scheduled_days, :consecutive_days, :year, :month, :max_monthly_assignments, :max_times_assigned_to_task, :position_class)
+  #attr_reader :schedule_data, :assignments
 
   class Monthly_Schedule
     include Worker_helper
     include Calendar_formats
 
-    attr_reader :schedule
+    #attr_reader :schedule
 
     def initialize(config)
       @config = config.config_data
@@ -42,13 +42,13 @@ module Scheduler
         begin
           calendar = initialize_calendar()
           Worker.data_reset() if rerun
-          calendar.each{|day| @daily_task_list.each { |schedule_type| select_attendant(schedule_type, day) }}
+          calendar.each{|day| @daily_task_list.each { |schedule_type| select_workers(schedule_type, day) }}
           break if rerun_max <= rerun_count += 1
           rerun = Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER)
         end while rerun
       end
 
-      def select_attendant(schedule_type, day)
+      def select_workers(schedule_type, day)
         @worker_classes.data.each do |data|
           if data.schedule_type == schedule_type
             if data.respond_to?('get_custom_worker')
