@@ -6,7 +6,7 @@ module Schedule_maker
     extend self
 
     SCHEDULE_DATA = Struct.new(:daily_task_list, :rerun_max, :scheduled_days, :consecutive_days, :year, :month, :max_monthly_assignments, :max_times_assigned_to_task, :position_class)
-    attr_reader :schedule_data, :assignments
+    attr_reader :schedule_data, :assignments, :config
 
     class Monthly_Schedule
         include Calendar_formats
@@ -16,16 +16,18 @@ module Schedule_maker
         def initialize(prep_schedule, config)
             @prep_schedule = prep_schedule
             @config = config
-            Worker.max_monthly_assignments = @config.max_monthly_assignments
-            Worker.total_tasks = @config.daily_task_list.count
-            Worker.max_times_assigned_to_task = @config.max_times_assigned_to_task
-            Worker.scheduled_days = @config.scheduled_days
-            make_schedule(@config.rerun_max)
+            @daily_task_list = @config.config_data['daily_task_list'].map(&:to_sym);
+            Worker.max_monthly_assignments = @config.config_data['max_monthly_assignments']
+            Worker.total_tasks = @daily_task_list.count
+            Worker.max_times_assigned_to_task = @config.config_data['max_times_assigned_to_task']
+            Worker.scheduled_days = @config.config_data['scheduled_days']
+            @run_tests = @config.config_data['run_tests']
+            make_schedule(@config.config_data['rerun_max'])
         end
 
         def generate_calendar(calendar_run)
             begin
-                calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @config.daily_task_list, Worker.scheduled)
+                calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @daily_task_list, Worker.scheduled)
                 calendar(calendar_data)
             rescue => e
                 puts e.message
@@ -40,9 +42,12 @@ module Schedule_maker
                 begin
                     calendar = initialize_calendar()
                     Worker.data_reset() if rerun
-                    calendar.each{|day| @config.daily_task_list.each { |schedule_type| select_attendant(schedule_type, day) }}
-                    break if rerun_max <= rerun_count += 1
-                    rerun = Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER)
+                    calendar.each{|day| @daily_task_list.each { |schedule_type| select_attendant(schedule_type, day) }}
+                    break if rerun_max < rerun_count += 1
+                    rerun = Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER) > 0
+                    if @run_tests
+                        info_make_schedule(Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER), rerun_count, rerun_max, Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER) > 0)
+                    end
                 end while rerun
             end
 
@@ -50,7 +55,7 @@ module Schedule_maker
                 @attendant_classes.data.each do |data|
                     if data.schedule_type == schedule_type
                         if data.respond_to?('get_custom_worker')
-                            custom_data = Config::get_worker_data(data)
+                            custom_data = Config::get_custom_data(data)
                             data.get_custom_worker(day, custom_data[0])
                         else
                             data.get_worker()
@@ -72,8 +77,8 @@ module Schedule_maker
             end
 
             def initialize_calendar(prep_schedule = true)
-                @attendant_classes = @prep_schedule::Attendant_data_classes.new(@config.daily_task_list) if prep_schedule
-                gen_calendar(@config.year,@config.month,@config.scheduled_days) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday] + " " + d.to_s}
+                @attendant_classes = @prep_schedule::Attendant_data_classes.new(@daily_task_list) if prep_schedule
+                gen_calendar(@config.year,@config.month,@config.config_data['scheduled_days']) {|y,m,d| Date::ABBR_DAYNAMES[Date.new(y,m,d).wday] + " " + d.to_s}
             end
     end
 end

@@ -7,11 +7,14 @@ rerun_max: 5
 month: 7
 year: 2017
 
+#schedule types = [SOUND, STAGE, MICROPHONE, SEATING, PARKING_LOT, LOBBY]
 daily_task_list: [SOUND, SOUND, STAGE, MICROPHONE, MICROPHONE, SEATING, SEATING, PARKING_LOT, PARKING_LOT, LOBBY]
 
 #scheduled days = MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6, SUN: 7
 scheduled_days: [3,7]
 
-position_class_map: {Consecutive_days: [SOUND, 2], Worker: [STAGE, MICROPHONE, SEATING, PARKING_LOT, LOBBY]}
+classes_map: {Consecutive_days: [SOUND, 2], Worker: [STAGE, MICROPHONE, SEATING, PARKING_LOT, LOBBY]}
 
 data_dir: "data/"
+
+run_tests: true
