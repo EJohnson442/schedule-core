@@ -5,19 +5,19 @@ module Calendar_formats
     FORMATS = [:native, :json, :task]
     CALENDAR_DATA = Struct.new(:fmt, :calendar, :daily_task_list, :schedule)
     
-    Native_calendar = Struct.new(:calendar, :daily_task_list, :attendants) do
+    Native_calendar = Struct.new(:calendar, :daily_task_list, :workers) do
         def generate_calendar()
             schedule = []
-            attendant_list = []
-            attendants.each do |a|
+            worker_list = []
+            workers.each do |a|
                 position = a.keys[0].id2name
-                attendant_list << position + " = " + a.values[0]
+                worker_list << position + " = " + a.values[0]
             end
 
             (0..calendar.length - 1).each do
-                daily_attendants = attendant_list.shift(daily_task_list.length)
-                daily_attendants.insert(0,calendar.shift)
-                schedule << daily_attendants
+                daily_workers = worker_list.shift(daily_task_list.length)
+                daily_workers.insert(0,calendar.shift)
+                schedule << daily_workers
             end
             schedule
         end
@@ -59,7 +59,7 @@ module Calendar_formats
         def generate_calendar()
             schedule = []
             calendar.each do |schedule_day|
-                schedule_day.each {|attendant| schedule << "#{attendant}"}
+                schedule_day.each {|worker| schedule << "#{worker}"}
                 schedule << " "
             end
         end

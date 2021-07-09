@@ -5,8 +5,7 @@ module Config
     
     WORKER_CLASSES = [Worker, Consecutive_days] #see if this info can be extracted
     
-    #attr_accessor :max_times_assigned_to_task, :rerun_max, :month, :year, :daily_task_list, :scheduled_days, :consecutive_days, :data_dir, :classes_map, :run_tests, :config_data
-    attr_accessor :scheduled_days, :consecutive_days, :data_dir, :classes_map, :run_tests, :config_data
+    attr_accessor :config_data
 
     def included(klass)
         load_config(File.open('config.yml')) if @config_data == nil

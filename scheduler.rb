@@ -13,8 +13,8 @@ module Scheduler
     include Calendar_formats
 
     def generate(calendar = :task, month = Time.now.month, year = Time.now.year)
-        Config::month = month
-        Config::year = year
+        Config::config_data['month'] = month
+        Config::config_data['year'] = year
 
         ms = Monthly_Schedule.new(Prep_schedule, Config)
         ms.generate_calendar(calendar)

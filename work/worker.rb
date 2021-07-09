@@ -27,6 +27,7 @@ class Worker
         if block_given?
             @workers = yield(schedule_type)
         end
+        info_workers(@schedule_type, @workers)
     end
 
     def get_worker()

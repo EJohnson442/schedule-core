@@ -26,9 +26,9 @@ module Validator
             else
                 start_data_range = (@validate_data.scheduled.length - @validate_data.total_tasks) - (@validate_data.scheduled.length % @validate_data.total_tasks)
             end
-            attendants = []
-            @validate_data.scheduled.each {|d| attendants << d.values[0]}
-            attendants.values_at(start_data_range..@validate_data.scheduled.length - 1).include?(candidate)
+            workers = []
+            @validate_data.scheduled.each {|d| workers << d.values[0]}
+            workers.values_at(start_data_range..@validate_data.scheduled.length - 1).include?(candidate)
         end
     end
     
