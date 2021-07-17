@@ -20,6 +20,7 @@ module Schedule_maker
             Worker.total_tasks = @daily_task_list.count
             Worker.max_times_assigned_to_task = @config.config_data['max_times_assigned_to_task']
             Worker.scheduled_days = @config.config_data['scheduled_days']
+            Worker.priority_schedule_types = @config.config_data['priority_schedule_types']
             @run_tests = @config.config_data['run_tests']
             make_schedule(@config.config_data['rerun_max'])
         end
@@ -44,9 +45,7 @@ module Schedule_maker
                     calendar.each{|day| @daily_task_list.each { |schedule_type| select_worker(schedule_type, day) }}
                     break if rerun_max < rerun_count += 1
                     rerun = Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER) > 0
-                    if @run_tests
-                        info_make_schedule(Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER), rerun_count, rerun_max, Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER) > 0)
-                    end
+                    info_make_schedule(Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER), rerun_count, rerun_max, Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER) > 0) if @run_tests
                 end while rerun
             end
 
@@ -55,7 +54,7 @@ module Schedule_maker
                     if data.schedule_type == schedule_type
                         if data.respond_to?('get_custom_worker')
                             custom_data = Config::get_custom_data(data)
-                            data.get_custom_worker(day, custom_data[0])
+                            data.get_custom_worker(day, custom_data)
                         else
                             data.get_worker()
                         end

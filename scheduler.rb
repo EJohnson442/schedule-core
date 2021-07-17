@@ -13,6 +13,9 @@ module Scheduler
     include Calendar_formats
 
     def generate(calendar = :task, month = Time.now.month, year = Time.now.year)
+        if Config::config_data == nil
+            Config::load_config(File.open('config.yml'))
+        end    
         Config::config_data['month'] = month
         Config::config_data['year'] = year
 

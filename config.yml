@@ -17,4 +17,7 @@ classes_map: {Consecutive_days: [SOUND, 2], Worker: [STAGE, MICROPHONE, SEATING,
 
 data_dir: "data/"
 
-run_tests: true
+run_tests: false
+
+#priority_schedule_types: {schedule_type: required monthly workers}
+priority_schedule_types: {SOUND: 8}

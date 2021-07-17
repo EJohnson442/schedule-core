@@ -14,7 +14,6 @@ module Prep_schedule
         end
 
         def create_schedule_classes(schedule_type)
-            info_create_schedule_classes("schedule_type = #{schedule_type}")
             schedule_class = Config::get_worker_classes(schedule_type)
             schedule_class.new(schedule_type) {|f| load_workers(Config.config_data['data_dir'] + schedule_type.to_s.capitalize + ".dat")}
         end

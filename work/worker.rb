@@ -7,9 +7,10 @@ class Worker
     DEFAULT_WORKER = "unresolved"
     
     @@scheduled_optimized = @@scheduled = []
+    @@priority_workers = []
 
     class << self                   #Class instance variables
-        attr_accessor :total_tasks, :max_monthly_assignments, :max_times_assigned_to_task, :scheduled_days
+        attr_accessor :total_tasks, :max_monthly_assignments, :max_times_assigned_to_task, :scheduled_days, :priority_schedule_types
     end
 
     #access class variables
@@ -26,32 +27,43 @@ class Worker
         @schedule_type = schedule_type
         if block_given?
             @workers = yield(schedule_type)
+            if @workers.length > 0 && Worker.priority_schedule_types.keys.include?(schedule_type.to_s)
+                set_priority_workers(@workers)
+            end
         end
-        info_workers(@schedule_type, @workers)
+    end
+
+    def set_priority_workers(priority_workers)
+        @@priority_workers.clear()
+        total_workers_needed = Worker.priority_schedule_types[schedule_type.to_s].to_i
+        if priority_workers.length < total_workers_needed
+            use_workers = priority_workers
+        else
+            use_workers = priority_workers[0..total_workers_needed - 1]
+        end
+        @@priority_workers.add_workers(use_workers)
     end
 
     def get_worker()
         worker = DEFAULT_WORKER
-        mode = :initial
         worker_data = prioritize_workers()
 
         worker_data.each do |candidate|
             if block_given?
-                mode = :custom
                 if yield(candidate)
                     worker = candidate
+                    @@priority_workers.remove_worker(candidate) # move this code into consecutive_days???
                     break
                 end
             else
-                mode = :general
-                if is_valid(candidate) {|v| Validator.validate(v)}
+                if !@@priority_workers.worker_exists(candidate) && is_valid(candidate) {|v| Validator.validate(v)}
                     worker = candidate
+                    schedule_worker(worker)
                     break
                 end
             end
         end
-        
-        schedule_worker(worker) if mode == :general
+        #schedule_worker(worker) if worker == candidate
         worker
     end
 
@@ -93,5 +105,20 @@ class Worker
                 @@scheduled_optimized.count_candidates(DEFAULT_WORKER) > @@scheduled.count_candidates(DEFAULT_WORKER)
                 @@scheduled_optimized = @@scheduled.dup
             end
+        end
+
+        def @@priority_workers.add_workers(workers)
+            workers.each {|worker| self.push(worker)}
+        end
+
+        def @@priority_workers.remove_worker(worker)
+            #only delete first occurance
+            if self.length > 0
+                self.delete_at(self.index(worker))
+            end
+        end
+
+        def @@priority_workers.worker_exists(worker)
+            self.index(worker) != nil
         end
 end
