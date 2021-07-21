@@ -19,6 +19,12 @@ def get_custom_worker_log(method_name, *args)
     Logs.debug("worker: #{args[2]}")
 end
 
+def if_recently_assigned_log(method_name, *args)
+    Logs.debug("Method name: #{method_name}")
+    Logs.debug("is_valid => recently_assigned: #{args[0]}")
+    Logs.debug("")
+end
+
 def info_make_schedule(count_candidates, rerun_count, rerun_max, count_candidates_gt0)
     Logs.debug("***** make_schedule")
     Logs.debug("rerun count: #{rerun_count}")

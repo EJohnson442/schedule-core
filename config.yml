@@ -8,6 +8,8 @@ month: 7
 year: 2017
 
 #schedule types = [SOUND, STAGE, MICROPHONE, SEATING, PARKING_LOT, LOBBY]
+#Identical schedule types should be placed next to one another in the daily_task_list
+#priority_schedule_types should be listed first by importance
 daily_task_list: [SOUND, SOUND, STAGE, MICROPHONE, MICROPHONE, SEATING, SEATING, PARKING_LOT, PARKING_LOT, LOBBY]
 
 #scheduled days = MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6, SUN: 7

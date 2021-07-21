@@ -52,18 +52,17 @@ class Worker
             if block_given?
                 if yield(candidate)
                     worker = candidate
-                    @@priority_workers.remove_worker(candidate) # move this code into consecutive_days???
+                    @@priority_workers.remove_worker(candidate)
                     break
                 end
-            else
-                if !@@priority_workers.worker_exists(candidate) && is_valid(candidate) {|v| Validator.validate(v)}
+            elsif !@@priority_workers.is_priority?(candidate)
+                if  is_valid(candidate) {|v| Validator.validate(v)}
                     worker = candidate
                     schedule_worker(worker)
                     break
                 end
             end
         end
-        #schedule_worker(worker) if worker == candidate
         worker
     end
 
@@ -113,12 +112,12 @@ class Worker
 
         def @@priority_workers.remove_worker(worker)
             #only delete first occurance
-            if self.length > 0
+            if self.length > 0 and self.include?(worker)
                 self.delete_at(self.index(worker))
             end
         end
 
-        def @@priority_workers.worker_exists(worker)
-            self.index(worker) != nil
+        def @@priority_workers.is_priority?(worker)
+            self.include?(worker)
         end
 end

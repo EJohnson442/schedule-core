@@ -2,15 +2,10 @@ require 'worker'
 require 'logging'
 
 class Consecutive_days < Worker
-    @@worker_list
-    class << self
-        attr_accessor :worker_list
-    end
-
     def initialize(schedule_type)
         super(schedule_type)
         @days_count = 0
-        self.class.worker_list = []
+        @worker_list = []
         @day_index = -1
     end
 
@@ -18,14 +13,17 @@ class Consecutive_days < Worker
         # args[0] = day of week label, i.e., "Wed 7" & args[1] = consecutive days
         @consecutive_days = args[1]
         new_day(args[0]) if @current_day != args[0]
-        if @days_count == 1                                 #first day
+        if @days_count == 1
+            # first day
+            # workers are only determined on the first day.
+            # Any other day is a consecutive day and always has the same workers.
             worker = get_worker()
-            self.class.worker_list << worker
+            @worker_list << worker
         else
-            worker = self.class.worker_list[@day_index += 1]
-            schedule_worker(worker)
-            @day_index = -1 if @day_index == self.class.worker_list.length - 1
+            worker = @worker_list[@day_index += 1]
+            @day_index = -1 if @day_index == @worker_list.length - 1
         end
+        schedule_worker(worker)
         get_custom_worker_log(__method__,args,@schedule_type,worker) if @run_tests
         worker
     end
@@ -35,20 +33,18 @@ class Consecutive_days < Worker
             add_to_schedule = false
             worker = Worker::DEFAULT_WORKER
             loop do
-                # calls parent (worker.get_worker ()) and executes {|candidate| add_...} block at yield that returns true/false
+                # calls parent (worker.get_worker ()) and executes {|candidate| add_...} block that returns true/false at yield
                 worker = super() {|candidate| add_to_schedule = is_valid(candidate)}
                 break if add_to_schedule || (worker == Worker::DEFAULT_WORKER)
             end
-            schedule_worker(worker)
             worker
         end
         
         def is_valid(candidate)
-            if self.class.worker_list.include?(candidate)
-                valid = false
+            if @worker_list.include?(candidate)
+                false
             else
-                valid = @@scheduled.count_candidates(candidate, @schedule_type) == 0
-                valid or @@scheduled.count_candidates(candidate) + @consecutive_days <= Worker.max_monthly_assignments
+                @@scheduled.count_candidates(candidate) + @consecutive_days <= Worker.max_monthly_assignments
             end
         end
 
@@ -56,7 +52,7 @@ class Consecutive_days < Worker
             @current_day = current_day
             if @consecutive_days < @days_count += 1     #first day
                 @days_count = 1
-                self.class.worker_list.clear()
+                @worker_list.clear()
             end
         end
 end
