@@ -1,4 +1,5 @@
 require_relative 'validation'
+#require_relative 'validation_dev'
 require 'logging'
 
 class Worker
@@ -56,7 +57,8 @@ class Worker
                     break
                 end
             elsif !@@priority_workers.is_priority?(candidate)
-                if  is_valid(candidate) {|v| Validator.validate(v)}
+                @data_set_test = create_data_set(candidate)
+                if  is_valid?(candidate) {|v| Validator::is_valid?(@data_set_test)}
                     worker = candidate
                     schedule_worker(worker)
                     break
@@ -71,9 +73,20 @@ class Worker
     end
 
     protected
-        def is_valid(candidate)
-            validate_data = Validator::VALIDATE_DATA.new(self.class.max_monthly_assignments,candidate,@schedule_type,self.class.max_times_assigned_to_task,@@scheduled,self.class.total_tasks, self.class.scheduled_days)
-            yield(validate_data)
+        def is_valid?(candidate)
+            yield(Validator::is_valid?(@data_set_test))
+        end
+
+        def create_data_set(candidate)
+            data_set = {}
+            data_set["max_monthly_assignments"] = self.class.max_monthly_assignments
+            data_set["candidate"] = candidate
+            data_set["schedule_type"] = @schedule_type
+            data_set["max_times_assigned_to_task"] = self.class.max_times_assigned_to_task
+            data_set["scheduled"] = @@scheduled
+            data_set["total_tasks"] = self.class.total_tasks
+            data_set["scheduled_days"] = self.class.scheduled_days
+            data_set.freeze
         end
 
         def @@scheduled.count_candidates(candidate, schedule_type = nil)
