@@ -1,6 +1,6 @@
 $LOAD_PATH << File.dirname(__FILE__)
 $LOAD_PATH << 'work'
-require_relative 'setup'
+require_relative 'load_data_files'
 require_relative 'schedule'
 require_relative 'config'
 require_relative 'utils'

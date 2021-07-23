@@ -39,7 +39,8 @@ module Validator
             info_recently_assigned(@candidate, scheduled,workers,date_range,recently_assigned) if @run_tests
             workers = []
             @scheduled.each {|d| workers << d.values[0]}
-            info_recently_assigned_log(candidate, @scheduled,workers,"range: #{start_data_range}..#{@scheduled.length - 1}",workers.values_at(start_data_range..scheduled.length - 1).include?(candidate)) if @run_tests
+            info_recently_assigned_log(candidate, @scheduled,workers,"range: #{start_data_range}..#{@scheduled.length - 1}",
+                workers.values_at(start_data_range..scheduled.length - 1).include?(candidate)) if @run_tests
             workers.values_at(start_data_range..@scheduled.length - 1).include?(candidate)
         end
 

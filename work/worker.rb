@@ -1,5 +1,4 @@
 require_relative 'validation'
-#require_relative 'validation_dev'
 require 'logging'
 
 class Worker
@@ -28,7 +27,7 @@ class Worker
         @schedule_type = schedule_type
         if block_given?
             @workers = yield(schedule_type)
-            if @workers.length > 0 && Worker.priority_schedule_types.keys.include?(schedule_type.to_s)
+            if @workers.length > 0 and Worker.priority_schedule_types.keys.include?(schedule_type.to_s)
                 set_priority_workers(@workers)
             end
         end
@@ -37,7 +36,7 @@ class Worker
     def set_priority_workers(priority_workers)
         @@priority_workers.clear()
         total_workers_needed = Worker.priority_schedule_types[schedule_type.to_s].to_i
-        if priority_workers.length < total_workers_needed
+        if priority_workers.length <= total_workers_needed
             use_workers = priority_workers
         else
             use_workers = priority_workers[0..total_workers_needed - 1]
@@ -57,8 +56,7 @@ class Worker
                     break
                 end
             elsif !@@priority_workers.is_priority?(candidate)
-                @data_set_test = create_data_set(candidate)
-                if  is_valid?(candidate) {|v| Validator::is_valid?(@data_set_test)}
+                if Validator::is_valid?(create_data_set(candidate))
                     worker = candidate
                     schedule_worker(worker)
                     break
@@ -73,10 +71,6 @@ class Worker
     end
 
     protected
-        def is_valid?(candidate)
-            yield(Validator::is_valid?(@data_set_test))
-        end
-
         def create_data_set(candidate)
             data_set = {}
             data_set["max_monthly_assignments"] = self.class.max_monthly_assignments

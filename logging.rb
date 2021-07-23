@@ -43,18 +43,9 @@ def info_recently_assigned_log(candidate, scheduled,workers,date_range,recently_
     Logs.debug("recently_assigned: #{recently_assigned}")
     Logs.debug("")
 end
-# ABOVE THIS LINE ARE PERMANENT METHODS **************************************************************************************
-def info_workers(schedule_type, workers)
-    Logs.info("***** Initialize")
-    Logs.info("schedule_type = #{schedule_type}")
-    Logs.info("workers = #{workers}")
-    Logs.info("")
-end
 
-def error_load_config(msg)
-    Logs.warn("load_config error - '#{msg}")
-end
-
-def info_is_valid(data)
-    Logs.info("info_is_valid: #{data}")
+def error_load_config(method, msg)
+    Logs.error("Method name: #{method}")
+    Logs.error("load_config error - '#{msg}")
+    Logs.error("")
 end
