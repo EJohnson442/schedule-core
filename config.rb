@@ -17,7 +17,7 @@ module Config
             @worker_classes = @config_data['classes_map'].keys
             @loaded_config_data_files = true
         rescue  => e
-            error_load_config(__method__, e.message)
+            exception_msg(__method__, e.message)
         end
     end
 

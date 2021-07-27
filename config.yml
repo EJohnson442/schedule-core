@@ -1,6 +1,10 @@
 #attendant.rb
+#max monthly assignments
 max_monthly_assignments: 4
-max_times_assigned_to_task: 2     #how many times can someone be assigned to a task per month
+#max monthly individual task assignments, ex., assign stage = 2 and seating = 2, allowed but seating = 3 NOT allowed
+max_times_assigned_to_task: 2
+#allow consecutive weekly assignments
+allow_consecutive_weeks: false
 
 #schedule.rb
 rerun_max: 5

@@ -9,8 +9,8 @@ class Worker
     @@scheduled_optimized = @@scheduled = []
     @@priority_workers = []
 
-    class << self                   #Class instance variables
-        attr_accessor :total_tasks, :max_monthly_assignments, :max_times_assigned_to_task, :scheduled_days, :priority_schedule_types
+    class << self                   #Class instance variables total_daily_tasks
+        attr_accessor :total_daily_tasks, :max_monthly_assignments, :max_times_assigned_to_task, :scheduled_days, :priority_schedule_types
     end
 
     #access class variables
@@ -56,7 +56,7 @@ class Worker
                     break
                 end
             elsif !@@priority_workers.is_priority?(candidate)
-                if Validator::is_valid?(create_data_set(candidate))
+                if is_valid?(candidate)
                     worker = candidate
                     schedule_worker(worker)
                     break
@@ -71,16 +71,10 @@ class Worker
     end
 
     protected
-        def create_data_set(candidate)
-            data_set = {}
-            data_set["max_monthly_assignments"] = self.class.max_monthly_assignments
-            data_set["candidate"] = candidate
-            data_set["schedule_type"] = @schedule_type
-            data_set["max_times_assigned_to_task"] = self.class.max_times_assigned_to_task
-            data_set["scheduled"] = @@scheduled
-            data_set["total_tasks"] = self.class.total_tasks
-            data_set["scheduled_days"] = self.class.scheduled_days
-            data_set.freeze
+        def is_valid?(candidate)
+            validate_data = Validator::Validate_data.new(self.class.max_monthly_assignments, candidate, @@scheduled,
+                self.class.total_daily_tasks, self.class.scheduled_days, @schedule_type, self.class.max_times_assigned_to_task)
+            validate_data.is_valid?()
         end
 
         def @@scheduled.count_candidates(candidate, schedule_type = nil)

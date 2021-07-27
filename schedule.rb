@@ -17,7 +17,7 @@ module Schedule_maker
             @config = config
             @daily_task_list = @config.config_data['daily_task_list'].map(&:to_sym);
             Worker.max_monthly_assignments = @config.config_data['max_monthly_assignments']
-            Worker.total_tasks = @daily_task_list.count
+            Worker.total_daily_tasks = @daily_task_list.count
             Worker.max_times_assigned_to_task = @config.config_data['max_times_assigned_to_task']
             Worker.scheduled_days = @config.config_data['scheduled_days'].count
             Worker.priority_schedule_types = @config.config_data['priority_schedule_types']
@@ -30,7 +30,7 @@ module Schedule_maker
                 calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @daily_task_list, Worker.scheduled)
                 calendar(calendar_data)
             rescue => e
-                puts e.message
+                exception_msg(__method__, e.message)
             end
         end
 
@@ -52,9 +52,8 @@ module Schedule_maker
             def select_worker(schedule_type, day)
                 @schedule_classes.data.each do |data|
                     if data.schedule_type == schedule_type
-                        if data.respond_to?('get_custom_worker')
-                            custom_data = Config::get_custom_data(data)
-                            data.get_custom_worker(day, custom_data)
+                        if data.respond_to?(:get_custom_worker)
+                            data.get_custom_worker(day, Config::get_custom_data(data))
                         else
                             data.get_worker()
                         end

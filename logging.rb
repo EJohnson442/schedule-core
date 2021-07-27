@@ -6,10 +6,9 @@ Logs.datetime_format = '%Y-%m-%d %H:%M:%S'
 
 def is_valid_log(method_name, *args)
     Logs.debug("Method name: #{method_name}")
-    Logs.debug("new_assignments = #{args[0]}")
-    Logs.debug("assignments = #{args.count[1]}")
-    Logs.debug("max_monthly_assignments = #{args.count[2]}")
-    Logs.debug("valid = #{args.count[3]}")
+    Logs.debug("max_monthly_assignments = #{args.count[0]}")
+    Logs.debug("Candidate = #{args.count[1]}")
+    Logs.debug("valid = #{args.count[2]}")
 end
 
 def get_custom_worker_log(method_name, *args)
@@ -17,12 +16,6 @@ def get_custom_worker_log(method_name, *args)
     Logs.debug("args: #{args[0]}")
     Logs.debug("schedule_type: #{args[1]}")
     Logs.debug("worker: #{args[2]}")
-end
-
-def if_recently_assigned_log(method_name, *args)
-    Logs.debug("Method name: #{method_name}")
-    Logs.debug("is_valid => recently_assigned: #{args[0]}")
-    Logs.debug("")
 end
 
 def info_make_schedule(count_candidates, rerun_count, rerun_max, count_candidates_gt0)
@@ -44,8 +37,9 @@ def info_recently_assigned_log(candidate, scheduled,workers,date_range,recently_
     Logs.debug("")
 end
 
-def error_load_config(method, msg)
+def exception_msg(method, msg)
     Logs.error("Method name: #{method}")
-    Logs.error("load_config error - '#{msg}")
+    Logs.error("ERROR: '#{msg}")
     Logs.error("")
 end
+
