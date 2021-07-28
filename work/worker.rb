@@ -92,6 +92,35 @@ class Worker
             pos
         end
 
+        def @@scheduled.has_full_week_scheduled?()
+            self.length >= Config::config_data["daily_task_list"].length * Config::config_data["scheduled_days"].length
+        end
+
+        def @@scheduled.prior_week_range()
+            if self.has_full_week_scheduled?()
+                tasks_per_week = Config::config_data["daily_task_list"].length * Config::config_data["scheduled_days"].length
+                weeks_scheduled = (self.length / tasks_per_week).to_int
+                prior_week_start = (weeks_scheduled - 1) * tasks_per_week
+                prior_week_end = (weeks_scheduled * tasks_per_week) - 1
+                [prior_week_start, prior_week_end]
+            end
+        end
+
+        def @@scheduled.found_in_prior_week(candidate)
+            found = false
+            if self.has_full_week_scheduled?()
+                search = self.prior_week_range()
+                range_data = self[search[0]..search[1]]
+                range_data.each do |c|
+                    if c.values[0] == candidate
+                        found = true
+                        break
+                    end
+                end                    
+            end
+            found
+        end
+
         def prioritize_workers()     #order workers from least assigned to most assigned
             workers = []
             (0..@workers.length).each do |counter|

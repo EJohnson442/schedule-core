@@ -3,7 +3,7 @@ $LOAD_PATH << 'work'
 require_relative 'load_data_files'
 require_relative 'schedule'
 require_relative 'config'
-require_relative 'utils'
+require_relative 'calendar'
 
 module Scheduler
     extend self

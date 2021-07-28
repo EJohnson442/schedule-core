@@ -1,6 +1,6 @@
 require 'date'
 require 'logger'
-require_relative 'utils'
+require_relative 'calendar'
 
 module Schedule_maker
     extend self

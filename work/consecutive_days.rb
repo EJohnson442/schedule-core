@@ -34,18 +34,20 @@ class Consecutive_days < Worker
             worker = Worker::DEFAULT_WORKER
             loop do
                 # calls parent (worker.get_worker ()) and executes {|candidate| add_...} block that returns true/false at yield
-                worker = super() {|candidate| add_to_schedule = is_valid(candidate)}
+                worker = super() {|candidate| add_to_schedule = is_valid?(candidate)}
                 break if add_to_schedule || (worker == Worker::DEFAULT_WORKER)
             end
             worker
         end
-        
-        def is_valid(candidate)
-            if @worker_list.include?(candidate)
-                false
-            else
-                @@scheduled.count_candidates(candidate) + @consecutive_days <= Worker.max_monthly_assignments
+
+        def is_valid?(candidate)
+            is_valid = !@worker_list.include?(candidate)
+            if @@scheduled.has_full_week_scheduled?()
+                if @@scheduled.found_in_prior_week(candidate)
+                    is_valid = false
+                end
             end
+            is_valid
         end
 
         def new_day(current_day)

@@ -5,7 +5,7 @@ module Config
     
     WORKER_CLASSES = [Worker, Consecutive_days] #see if this info can be extracted
     
-    attr_accessor :config_data, :loaded_config_data_files
+    attr_reader :config_data, :loaded_config_data_files
 
     def included(klass)
         @loaded_config_data_files = false
