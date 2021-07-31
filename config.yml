@@ -7,7 +7,8 @@ max_times_assigned_to_task: 2
 allow_consecutive_weeks: false
 
 #schedule.rb
-rerun_max: 1
+rerun_max: 50
+#rerun_max: 0
 month: 7
 year: 2017
 
@@ -26,4 +27,5 @@ data_dir: "data/"
 run_tests: false
 
 #priority_schedule_types: {schedule_type: required monthly workers}
+#If the priority type is SOUND, then the SOUND task must be completed before other tasks can be undertaken.
 priority_schedule_types: {SOUND: 8}

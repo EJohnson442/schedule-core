@@ -7,8 +7,7 @@ module Validator
         :total_daily_tasks, :scheduled_days, :schedule_type, :max_times_assigned_to_task) do
         def is_valid?()
             is_valid = (!recently_assigned?() and !monthly_assignments_exceeded?() and !times_assigned_to_task_exceeded?())
-            #puts "is_valid: #{is_valid}, r: #{!recently_assigned?()}, m: #{!monthly_assignments_exceeded?()}, t: #{!times_assigned_to_task_exceeded?()}"
-            is_valid_log(__method__, candidate, is_valid, recently_assigned?(), !monthly_assignments_exceeded?(), !times_assigned_to_task_exceeded?()) if @run_tests
+            is_valid_log(__method__, candidate, is_valid, !recently_assigned?(), !monthly_assignments_exceeded?(), !times_assigned_to_task_exceeded?()) if @run_tests
             is_valid
         end
 
