@@ -47,22 +47,32 @@ class Worker
     def get_worker()
         worker = DEFAULT_WORKER
         worker_data = prioritize_workers()
+        workers_scheduled = 0
 
         worker_data.each do |candidate|
             if block_given?
                 if yield(candidate)
+                    workers_scheduled += 1
                     worker = candidate
+                    #puts "priority worker: #{@@priority_workers}"
                     @@priority_workers.remove_worker(candidate)
                     break
                 end
             elsif !@@priority_workers.is_priority?(candidate)
                 if is_valid?(candidate)
+                    workers_scheduled += 1
                     worker = candidate
                     schedule_worker(worker)
                     break
                 end
             end
         end
+
+        #if workers_scheduled == 0 && self.class == :workers
+        #    puts "unresolved 2: #{@schedule_type} and class: #{self.class}"
+        #    worker = DEFAULT_WORKER
+        #    schedule_worker(worker)
+        #end
         worker
     end
 
@@ -95,11 +105,34 @@ class Worker
         def @@scheduled.has_full_week_scheduled?()
             self.length >= Config::config_data["daily_task_list"].length * Config::config_data["scheduled_days"].length
         end
+=begin
+        def @@scheduled.prior_week_range(enhance_search)
+            if self.has_full_week_scheduled?()
+                tasks_per_week = Config::config_data["daily_task_list"].length * Config::config_data["scheduled_days"].length
+                weeks_scheduled = (self.length / tasks_per_week).to_int
+                prior_week_start = (weeks_scheduled - 1) * tasks_per_week
+                prior_week_end = enhance_search ? self.length - 1 : (weeks_scheduled * tasks_per_week) - 1
+                #puts "prior_week_end: #{prior_week_end}"
+                #prior_week_end = (weeks_scheduled * tasks_per_week) - 1
+                [prior_week_start, prior_week_end]
+            end
+        end
+=end
 
         def @@scheduled.prior_week_range()
             if self.has_full_week_scheduled?()
                 tasks_per_week = Config::config_data["daily_task_list"].length * Config::config_data["scheduled_days"].length
-                weeks_scheduled = (self.length / tasks_per_week).to_int
+                weeks_scheduled = self.length / tasks_per_week
+                prior_week_start = (weeks_scheduled - 1) * tasks_per_week
+                prior_week_end = (weeks_scheduled * tasks_per_week) - 1
+                [prior_week_start, prior_week_end]
+            end
+        end
+
+        def @@scheduled.prior_week_range2()
+            if self.has_full_week_scheduled?()
+                tasks_per_week = Config::config_data["daily_task_list"].length * Config::config_data["scheduled_days"].length
+                weeks_scheduled = self.length / tasks_per_week
                 prior_week_start = (weeks_scheduled - 1) * tasks_per_week
                 prior_week_end = (weeks_scheduled * tasks_per_week) - 1
                 [prior_week_start, prior_week_end]
@@ -107,6 +140,21 @@ class Worker
         end
 
         def @@scheduled.found_in_prior_week(candidate)
+            found = false
+            if self.has_full_week_scheduled?()
+                search = self.prior_week_range()
+                range_data = self[search[0]..search[1]]
+                range_data.each do |c|
+                    if c.values[0] == candidate
+                        found = true
+                        break
+                    end
+                end                    
+            end
+            found
+        end
+
+        def @@scheduled.found_in_prior_week2(candidate)
             found = false
             if self.has_full_week_scheduled?()
                 search = self.prior_week_range()

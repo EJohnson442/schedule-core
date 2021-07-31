@@ -11,6 +11,10 @@ def is_valid_log(method_name, *args)
     Logs.debug("valid = #{args.count[2]}")
 end
 
+def is_valid(method_name, *args)
+#puts "is_valid: #{is_valid}, r: #{!recently_assigned?()}, m: #{!monthly_assignments_exceeded?()}, t: #{!times_assigned_to_task_exceeded?()}"
+end
+
 def get_custom_worker_log(method_name, *args)
     Logs.debug("Method name: #{method_name}")
     Logs.debug("args: #{args[0]}")
