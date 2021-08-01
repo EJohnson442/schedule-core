@@ -67,8 +67,7 @@ class Worker
             end
         end
 
-        if workers_scheduled == 0 && self.class == :workers
-            puts "unresolved 2: #{@schedule_type} and class: #{self.class}"
+        if workers_scheduled == 0
             worker = DEFAULT_WORKER
             schedule_worker(worker)
         end

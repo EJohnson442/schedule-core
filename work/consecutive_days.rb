@@ -18,14 +18,12 @@ class Consecutive_days < Worker
             # workers are only determined on the first day.
             # Any other day is a consecutive day and always has the same workers.
             worker = get_worker()
-            #puts "days_count = 1 and worker_list: #{@worker_list}"
             @worker_list << worker
         else
             worker = @worker_list[@day_index += 1]
             @day_index = -1 if @day_index == @worker_list.length - 1
         end
         schedule_worker(worker)
-        #puts "worker_list length: #{@worker_list}"
         get_custom_worker_log(__method__,args,@schedule_type,worker) if @run_tests
         worker
     end
