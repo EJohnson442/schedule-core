@@ -67,7 +67,7 @@ class Worker
             end
         end
 
-        if workers_scheduled == 0 and self.class == :workers
+        if (workers_scheduled == 0) && (self.class == Worker)
             worker = DEFAULT_WORKER
             schedule_worker(worker)
         end
@@ -77,127 +77,128 @@ class Worker
     def schedule_worker(worker)
         @@scheduled << {@schedule_type => worker}
     end
-    protected
-        # begin testing block****************************************************************
-        def candidate_in_prior_weeks?(candidate, weeks = 1)
-            tasks_per_week = self.class.daily_tasks_list_count * self.class.scheduled_days_count
-            data_length = @@scheduled.length
-            if data_length < (tasks_per_week * weeks)
-                start_ndx = 0
-            else #data_length % tasks_per_week >= 0
-                start_ndx = ((data_length / tasks_per_week) * tasks_per_week)
-            end
-            candidate_in_prior_weeks_log(__method__, start_ndx, data_length - 1, tasks_per_week, data_length) if @run_tests
-            @@scheduled.found_candidate?(candidate, [start_ndx, data_length - 1])
-        end
 
-        def @@scheduled.found_candidate?(candidate, data_location)
-            found = false
-            range_data = self[data_location[0]..data_location[1]]
+    protected
+    def is_valid?(candidate)
+        is_valid = false
+        if !candidate_in_prior_weeks?(candidate)
+            validate_data = Validator::Validate_data.new(self.class.max_monthly_assignments, candidate, @@scheduled,
+                @schedule_type, self.class.max_times_assigned_to_task)
+            validate_data.is_valid?()
+        end
+    end
+
+    def candidate_in_prior_weeks?(candidate, weeks = 1)
+        tasks_per_week = self.class.daily_tasks_list_count * self.class.scheduled_days_count
+        data_length = @@scheduled.length
+        if data_length < (tasks_per_week * weeks)
+            start_ndx = 0
+        else #data_length % tasks_per_week >= 0
+            start_ndx = ((data_length / tasks_per_week) * tasks_per_week)
+        end
+        candidate_in_prior_weeks_log(__method__, start_ndx, data_length - 1, tasks_per_week, data_length) if @run_tests
+        @@scheduled.found_candidate?(candidate, [start_ndx, data_length - 1])
+    end
+    #BEGIN: @@scheduled methods
+    def @@scheduled.found_candidate?(candidate, data_location)
+        found = false
+        range_data = self[data_location[0]..data_location[1]]
+        range_data.each do |c|
+            if c.values[0] == candidate
+                found = true
+                break
+            end
+        end                 
+        found
+    end
+
+    def @@scheduled.count_candidates(candidate, schedule_type = nil)
+        total = 0
+        each do |c|
+            schedule_type != nil ? detail = c[schedule_type] : detail = c.values[0]
+            total += 1 if detail == candidate
+        end
+        total
+    end
+
+    def @@scheduled.position_of(candidate)
+        pos = 0
+        each { |c| c.values[0] == candidate ? break : pos += 1 }
+        pos
+    end
+
+    def @@scheduled.tasks_in_a_week()
+        #self.class.daily_tasks_list_count & any self.class... (class instance variables)
+        #are inaccessable outside Worker class. This is the workaround.
+        Worker.daily_tasks_list_count * Worker.scheduled_days_count
+    end
+
+    def @@scheduled.has_full_week_scheduled?()
+        self.length >= self.tasks_in_a_week()
+    end
+
+    def @@scheduled.prior_week_range()
+        if self.has_full_week_scheduled?()
+            tasks_per_week = self.tasks_in_a_week()
+            weeks_scheduled = self.length / tasks_per_week
+            prior_week_start = (weeks_scheduled - 1) * tasks_per_week
+            prior_week_end = (weeks_scheduled * tasks_per_week) - 1
+            [prior_week_start, prior_week_end]
+        end
+    end
+
+    def @@scheduled.prior_weeks_range(weeks = 1)     #this functionality should be determined externally by calling method 07.31.2021
+        if self.has_full_week_scheduled?()
+            tasks_per_week = self.tasks_in_a_week()
+            part_week = self.length % tasks_per_week
+            start_ndx = self.length > (tasks_per_week * weeks) ? (self.length - part_week) - (tasks_per_week * weeks) : 0                
+            [start_ndx, self.length - 1]
+        end
+    end
+
+    def @@scheduled.found_in_prior_week(candidate)
+        found = false
+        if self.has_full_week_scheduled?()
+            search = self.prior_week_range()    #yeah this is bad - to be reworked 07.31.2021
+            range_data = self[search[0]..search[1]]
             range_data.each do |c|
                 if c.values[0] == candidate
                     found = true
                     break
                 end
-            end                 
-            found
+            end                    
         end
-        # end testing block****************************************************************
-        def is_valid?(candidate)
-            is_valid = false
-            if !candidate_in_prior_weeks?(candidate)
-                validate_data = Validator::Validate_data.new(self.class.max_monthly_assignments, candidate, @@scheduled,
-                    @schedule_type, self.class.max_times_assigned_to_task)
-                validate_data.is_valid?()
-            end
-        end
+        found
+    end
+    #END: @@scheduled methods
+    #BEGIN: @@priority_workers methods
+    def @@priority_workers.add_workers(workers)
+        workers.each {|worker| self.push(worker)}
+    end
 
-        def @@scheduled.count_candidates(candidate, schedule_type = nil)
-            total = 0
-            each do |c|
-                schedule_type != nil ? detail = c[schedule_type] : detail = c.values[0]
-                total += 1 if detail == candidate
-            end
-            total
+    def @@priority_workers.remove_worker(worker)
+        #only delete first occurance
+        if self.length > 0 and self.include?(worker)
+            self.delete_at(self.index(worker))
         end
+    end
 
-        def @@scheduled.position_of(candidate)
-            pos = 0
-            each { |c| c.values[0] == candidate ? break : pos += 1 }
-            pos
+    def @@priority_workers.is_priority?(worker)
+        self.include?(worker)
+    end
+    #BEGIN: @@priority_workers methods
+    def prioritize_workers()     #order workers from least assigned to most assigned
+        workers = []
+        (0..@workers.length).each do |counter|
+            @workers.each {|candidate| workers << candidate if @@scheduled.count_candidates(candidate) <= counter && !workers.include?(candidate)}
         end
-
-        def @@scheduled.tasks_in_a_week()
-            #self.class.daily_tasks_list_count & any self.class... (class instance variables)
-            #are inaccessable outside Worker class. This is the workaround.
-            Worker.daily_tasks_list_count * Worker.scheduled_days_count
+        workers
+    end
+    
+    def self.keep_best_data_run()    #preserve data with lowest occurance of DEFAULT_WORKER
+        if @@scheduled_optimized == [] ||
+            @@scheduled_optimized.count_candidates(DEFAULT_WORKER) > @@scheduled.count_candidates(DEFAULT_WORKER)
+            @@scheduled_optimized = @@scheduled.dup
         end
-
-        def @@scheduled.has_full_week_scheduled?()
-            self.length >= self.tasks_in_a_week()
-        end
-
-        def @@scheduled.prior_week_range()
-            if self.has_full_week_scheduled?()
-                tasks_per_week = self.tasks_in_a_week()
-                weeks_scheduled = self.length / tasks_per_week
-                prior_week_start = (weeks_scheduled - 1) * tasks_per_week
-                prior_week_end = (weeks_scheduled * tasks_per_week) - 1
-                [prior_week_start, prior_week_end]
-            end
-        end
-
-        def @@scheduled.prior_weeks_range(weeks = 1)     #this functionality should be determined externally by calling method 07.31.2021
-            if self.has_full_week_scheduled?()
-                tasks_per_week = self.tasks_in_a_week()
-                part_week = self.length % tasks_per_week
-                start_ndx = self.length > (tasks_per_week * weeks) ? (self.length - part_week) - (tasks_per_week * weeks) : 0                
-                [start_ndx, self.length - 1]
-            end
-        end
-
-        def @@scheduled.found_in_prior_week(candidate)
-            found = false
-            if self.has_full_week_scheduled?()
-                search = self.prior_week_range()    #yeah this is bad - to be reworked 07.31.2021
-                range_data = self[search[0]..search[1]]
-                range_data.each do |c|
-                    if c.values[0] == candidate
-                        found = true
-                        break
-                    end
-                end                    
-            end
-            found
-        end
-
-        def prioritize_workers()     #order workers from least assigned to most assigned
-            workers = []
-            (0..@workers.length).each do |counter|
-                @workers.each {|candidate| workers << candidate if @@scheduled.count_candidates(candidate) <= counter && !workers.include?(candidate)}
-            end
-            workers
-        end
-        
-        def self.keep_best_data_run()    #preserve data with lowest occurance of DEFAULT_WORKER
-            if @@scheduled_optimized == [] ||
-                @@scheduled_optimized.count_candidates(DEFAULT_WORKER) > @@scheduled.count_candidates(DEFAULT_WORKER)
-                @@scheduled_optimized = @@scheduled.dup
-            end
-        end
-
-        def @@priority_workers.add_workers(workers)
-            workers.each {|worker| self.push(worker)}
-        end
-
-        def @@priority_workers.remove_worker(worker)
-            #only delete first occurance
-            if self.length > 0 and self.include?(worker)
-                self.delete_at(self.index(worker))
-            end
-        end
-
-        def @@priority_workers.is_priority?(worker)
-            self.include?(worker)
-        end
+    end
 end

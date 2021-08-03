@@ -44,6 +44,7 @@ module Schedule_maker
                     Worker.data_reset() if rerun
                     calendar.each{|day| @daily_task_list.each { |schedule_type| select_worker(schedule_type, day) }}
                     break if rerun_max < rerun_count += 1
+                    #puts "rerun cound: #{rerun_count}"
                     rerun = Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER) > 0
                     info_make_schedule(Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER), rerun_count, rerun_max, Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER) > 0) if @run_tests
                 end while rerun
