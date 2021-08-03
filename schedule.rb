@@ -17,9 +17,9 @@ module Schedule_maker
             @config = config
             @daily_task_list = @config.config_data['daily_task_list'].map(&:to_sym);
             Worker.max_monthly_assignments = @config.config_data['max_monthly_assignments']
-            Worker.total_daily_tasks = @daily_task_list.count
+            Worker.daily_tasks_list_count = @daily_task_list.count
             Worker.max_times_assigned_to_task = @config.config_data['max_times_assigned_to_task']
-            Worker.scheduled_days = @config.config_data['scheduled_days'].count
+            Worker.scheduled_days_count = @config.config_data['scheduled_days'].count
             Worker.priority_schedule_types = @config.config_data['priority_schedule_types']
             @run_tests = @config.config_data['run_tests']
             make_schedule(@config.config_data['rerun_max'])

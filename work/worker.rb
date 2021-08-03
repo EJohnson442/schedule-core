@@ -9,8 +9,8 @@ class Worker
     @@scheduled_optimized = @@scheduled = []
     @@priority_workers = []
 
-    class << self                   #Class instance variables total_daily_tasks
-        attr_accessor :total_daily_tasks, :max_monthly_assignments, :max_times_assigned_to_task, :scheduled_days, :priority_schedule_types
+    class << self                   #Class instance variables total_daily_tasks_count
+        attr_accessor :daily_tasks_list_count, :max_monthly_assignments, :max_times_assigned_to_task, :scheduled_days_count, :priority_schedule_types
     end
 
     #access class variables
@@ -67,7 +67,7 @@ class Worker
             end
         end
 
-        if workers_scheduled == 0
+        if workers_scheduled == 0 and self.class == :workers
             worker = DEFAULT_WORKER
             schedule_worker(worker)
         end
@@ -77,12 +77,39 @@ class Worker
     def schedule_worker(worker)
         @@scheduled << {@schedule_type => worker}
     end
-
     protected
+        # begin testing block****************************************************************
+        def candidate_in_prior_weeks?(candidate, weeks = 1)
+            tasks_per_week = self.class.daily_tasks_list_count * self.class.scheduled_days_count
+            data_length = @@scheduled.length
+            if data_length < (tasks_per_week * weeks)
+                start_ndx = 0
+            else #data_length % tasks_per_week >= 0
+                start_ndx = ((data_length / tasks_per_week) * tasks_per_week)
+            end
+            candidate_in_prior_weeks_log(__method__, start_ndx, data_length - 1, tasks_per_week, data_length) if @run_tests
+            @@scheduled.found_candidate?(candidate, [start_ndx, data_length - 1])
+        end
+
+        def @@scheduled.found_candidate?(candidate, data_location)
+            found = false
+            range_data = self[data_location[0]..data_location[1]]
+            range_data.each do |c|
+                if c.values[0] == candidate
+                    found = true
+                    break
+                end
+            end                 
+            found
+        end
+        # end testing block****************************************************************
         def is_valid?(candidate)
-            validate_data = Validator::Validate_data.new(self.class.max_monthly_assignments, candidate, @@scheduled,
-                self.class.total_daily_tasks, self.class.scheduled_days, @schedule_type, self.class.max_times_assigned_to_task)
-            validate_data.is_valid?()
+            is_valid = false
+            if !candidate_in_prior_weeks?(candidate)
+                validate_data = Validator::Validate_data.new(self.class.max_monthly_assignments, candidate, @@scheduled,
+                    @schedule_type, self.class.max_times_assigned_to_task)
+                validate_data.is_valid?()
+            end
         end
 
         def @@scheduled.count_candidates(candidate, schedule_type = nil)
@@ -100,13 +127,19 @@ class Worker
             pos
         end
 
+        def @@scheduled.tasks_in_a_week()
+            #self.class.daily_tasks_list_count & any self.class... (class instance variables)
+            #are inaccessable outside Worker class. This is the workaround.
+            Worker.daily_tasks_list_count * Worker.scheduled_days_count
+        end
+
         def @@scheduled.has_full_week_scheduled?()
-            self.length >= Config::config_data["daily_task_list"].length * Config::config_data["scheduled_days"].length
+            self.length >= self.tasks_in_a_week()
         end
 
         def @@scheduled.prior_week_range()
             if self.has_full_week_scheduled?()
-                tasks_per_week = Config::config_data["daily_task_list"].length * Config::config_data["scheduled_days"].length
+                tasks_per_week = self.tasks_in_a_week()
                 weeks_scheduled = self.length / tasks_per_week
                 prior_week_start = (weeks_scheduled - 1) * tasks_per_week
                 prior_week_end = (weeks_scheduled * tasks_per_week) - 1
@@ -114,13 +147,12 @@ class Worker
             end
         end
 
-        def @@scheduled.prior_week_range2()     #this functionality should be determined externally by calling method 07.31.2021
+        def @@scheduled.prior_weeks_range(weeks = 1)     #this functionality should be determined externally by calling method 07.31.2021
             if self.has_full_week_scheduled?()
-                tasks_per_week = Config::config_data["daily_task_list"].length * Config::config_data["scheduled_days"].length
-                weeks_scheduled = self.length / tasks_per_week
-                prior_week_start = (weeks_scheduled - 1) * tasks_per_week
-                prior_week_end = (weeks_scheduled * tasks_per_week) - 1
-                [prior_week_start, prior_week_end]
+                tasks_per_week = self.tasks_in_a_week()
+                part_week = self.length % tasks_per_week
+                start_ndx = self.length > (tasks_per_week * weeks) ? (self.length - part_week) - (tasks_per_week * weeks) : 0                
+                [start_ndx, self.length - 1]
             end
         end
 
@@ -128,21 +160,6 @@ class Worker
             found = false
             if self.has_full_week_scheduled?()
                 search = self.prior_week_range()    #yeah this is bad - to be reworked 07.31.2021
-                range_data = self[search[0]..search[1]]
-                range_data.each do |c|
-                    if c.values[0] == candidate
-                        found = true
-                        break
-                    end
-                end                    
-            end
-            found
-        end
-
-        def @@scheduled.found_in_prior_week2(candidate)
-            found = false
-            if self.has_full_week_scheduled?()
-                search = self.prior_week_range()
                 range_data = self[search[0]..search[1]]
                 range_data.each do |c|
                     if c.values[0] == candidate

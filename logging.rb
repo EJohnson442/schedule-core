@@ -5,14 +5,10 @@ Logs = Logger.new(STDOUT)
 Logs.datetime_format = '%Y-%m-%d %H:%M:%S'
 
 def is_valid_log(method_name, *args)
+    #(__method__, candidate, is_valid, !monthly_assignments_exceeded?(), !times_assigned_to_task_exceeded?(), schedule_type)
     Logs.debug("Method name: #{method_name}")
-    Logs.debug("max_monthly_assignments = #{args.count[0]}")
-    Logs.debug("Candidate = #{args.count[1]}")
-    Logs.debug("valid = #{args.count[2]}")
-end
-
-def is_valid(method_name, *args)
-#puts "is_valid: #{is_valid}, r: #{!recently_assigned?()}, m: #{!monthly_assignments_exceeded?()}, t: #{!times_assigned_to_task_exceeded?()}"
+    Logs.debug("schedule type = #{args[4]} / candidate = #{args[0]} / is valid = #{args[1]}")
+    Logs.debug("monthly assignments exceeded = #{args[2]} / times assigned to task exceeded = #{args[3]}")
 end
 
 def get_custom_worker_log(method_name, *args)
@@ -20,6 +16,12 @@ def get_custom_worker_log(method_name, *args)
     Logs.debug("args: #{args[0]}")
     Logs.debug("schedule_type: #{args[1]}")
     Logs.debug("worker: #{args[2]}")
+end
+
+def candidate_in_prior_weeks_log(method_name, *args)
+    Logs.debug("Method name: #{method_name}")
+    Logs.debug("Range: #{args[0]} to #{args[1]} & tasks per week: #{args[2]} & data length: #{args[3]}")
+    Logs.debug("")
 end
 
 def info_make_schedule(count_candidates, rerun_count, rerun_max, count_candidates_gt0)
