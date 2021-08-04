@@ -26,7 +26,7 @@ end
 
 def info_make_schedule(count_candidates, rerun_count, rerun_max, count_candidates_gt0)
     Logs.debug("***** make_schedule")
-    Logs.debug("rerun count: #{rerun_count}")
+    Logs.debug("Counts of defaults: #{rerun_count}")
     Logs.debug("rerun max: #{rerun_max}")
     Logs.debug("DEFAULT_WORKER count: #{count_candidates}")
     Logs.debug("count candidates: #{count_candidates_gt0}")

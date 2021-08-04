@@ -1,4 +1,3 @@
-require_relative 'validation'
 require 'logging'
 
 class Worker
@@ -79,13 +78,15 @@ class Worker
     end
 
     protected
+    #BEGIN: Validation
     def is_valid?(candidate)
         is_valid = false
         if !candidate_in_prior_weeks?(candidate)
-            validate_data = Validator::Validate_data.new(self.class.max_monthly_assignments, candidate, @@scheduled,
-                @schedule_type, self.class.max_times_assigned_to_task)
-            validate_data.is_valid?()
+            monthly_assignments_exceeded = @@scheduled.count_candidates(candidate) + 1 > self.class.max_monthly_assignments
+            times_assigned_to_task_exceeded = @@scheduled.count_candidates(candidate, @schedule_type) + 1 > self.class.max_times_assigned_to_task
+            is_valid = (!monthly_assignments_exceeded and !times_assigned_to_task_exceeded)    
         end
+        is_valid
     end
 
     def candidate_in_prior_weeks?(candidate, weeks = 1)
@@ -99,6 +100,7 @@ class Worker
         candidate_in_prior_weeks_log(__method__, start_ndx, data_length - 1, tasks_per_week, data_length) if @run_tests
         @@scheduled.found_candidate?(candidate, [start_ndx, data_length - 1])
     end
+    #END: Validation
     #BEGIN: @@scheduled methods
     def @@scheduled.found_candidate?(candidate, data_location)
         found = false
@@ -197,7 +199,7 @@ class Worker
     
     def self.keep_best_data_run()    #preserve data with lowest occurance of DEFAULT_WORKER
         if @@scheduled_optimized == [] ||
-            @@scheduled_optimized.count_candidates(DEFAULT_WORKER) > @@scheduled.count_candidates(DEFAULT_WORKER)
+            (@@scheduled_optimized.count_candidates(DEFAULT_WORKER) > @@scheduled.count_candidates(DEFAULT_WORKER))
             @@scheduled_optimized = @@scheduled.dup
         end
     end
