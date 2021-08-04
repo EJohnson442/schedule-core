@@ -46,7 +46,7 @@ module Schedule_maker
                     break if rerun_max < rerun_count += 1
                     default_cnt = Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER)
                     rerun = default_cnt > 0
-                    info_make_schedule(default_cnt, rerun_count, rerun_max, Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER) > 0) if @run_tests
+                    info_make_schedule(default_cnt, rerun_count, rerun_max) if @run_tests
                 end while rerun
             end
 

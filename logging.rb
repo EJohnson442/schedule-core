@@ -24,13 +24,13 @@ def candidate_in_prior_weeks_log(method_name, *args)
     Logs.debug("")
 end
 
-def info_make_schedule(count_candidates, rerun_count, rerun_max, count_candidates_gt0)
+def info_make_schedule(count_candidates, rerun_count, rerun_max)
     Logs.debug("***** make_schedule")
-    Logs.debug("Counts of defaults: #{rerun_count}")
-    Logs.debug("rerun max: #{rerun_max}")
-    Logs.debug("DEFAULT_WORKER count: #{count_candidates}")
-    Logs.debug("count candidates: #{count_candidates_gt0}")
-    Logs.debug("")
+    Logs.debug("Reruns: #{rerun_count} / rerun max: #{rerun_max} / DEFAULT_WORKER count: #{count_candidates}")
+    #Logs.debug("rerun max: #{rerun_max}")
+    #Logs.debug("DEFAULT_WORKER count: #{count_candidates}")
+    #Logs.debug("count candidates: #{count_candidates_gt0}")
+    #Logs.debug("")
 end
 
 def info_recently_assigned_log(candidate, scheduled,workers,date_range,recently_assigned)
