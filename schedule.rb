@@ -28,6 +28,7 @@ module Schedule_maker
         def generate_calendar(calendar_run)
             begin
                 calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @daily_task_list, Worker.scheduled)
+                puts calendar_data
                 calendar(calendar_data)
             rescue => e
                 exception_msg(__method__, e.message)
@@ -45,6 +46,7 @@ module Schedule_maker
                     calendar.each{|day| @daily_task_list.each { |schedule_type| select_worker(schedule_type, day) }}
                     break if rerun_max < rerun_count += 1
                     default_cnt = Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER)
+                    #puts "default_cnt: #{default_cnt}"
                     rerun = default_cnt > 0
                     info_make_schedule(default_cnt, rerun_count, rerun_max) if @run_tests
                 end while rerun

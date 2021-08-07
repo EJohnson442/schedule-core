@@ -14,9 +14,16 @@ class Worker
 
     #access class variables
     def self.scheduled()
-        @@scheduled_optimized = [] ? @@scheduled.clone : @@scheduled_optimized.clone
+        @@scheduled_optimized
     end
-
+=begin
+    #access class variables
+    def self.scheduled()
+        #@@scheduled_optimized = [] ? @@scheduled.clone : @@scheduled_optimized.clone
+        @@scheduled_optimized = [] ? @@scheduled : @@scheduled_optimized        # change #2
+        @@scheduled_optimized
+    end
+=end
     def self.data_reset()
         keep_best_data_run()
         @@scheduled.clear
@@ -87,6 +94,37 @@ class Worker
             is_valid = (!monthly_assignments_exceeded and !times_assigned_to_task_exceeded)    
         end
         is_valid
+    end
+
+    def candidate_in_prior_weeks2?(candidate, weeks = 1) #TESTING HERE****************************************************
+        #tasks_per_week = self.class.daily_tasks_list_count * self.class.scheduled_days_count
+        tasks_per_week = Worker.daily_tasks_list_count * Worker.scheduled_days_count
+        data_length = @@scheduled.length
+        if data_length >= tasks_per_week
+            #Ensures same data range while reviewing multiple days
+            consec_days_adjust = data_length % tasks_per_week
+            start_ndx = data_length - tasks_per_week > 0 ? data_length - tasks_per_week : 0
+            end_ndx = data_length - 1
+            if consec_days_adjust > 0
+                start_ndx = start_ndx - consec_days_adjust
+                end_ndx = end_ndx - consec_days_adjust
+            end
+            candidate_in_prior_weeks_log(__method__, start_ndx, data_length - 1, tasks_per_week, data_length) if @run_tests
+            found_it = @@scheduled.found_candidate2?(candidate, [start_ndx, end_ndx])
+        end
+        found_it
+    end
+
+    def @@scheduled.found_candidate2?(candidate, data_location) #TESTING HERE****************************************************
+        found = false
+        range_data = self[data_location[0]..data_location[1]]
+        range_data.each do |c|
+            if c.values[0] == candidate
+                found = true
+                break
+            end
+        end
+        found
     end
 
     def candidate_in_prior_weeks?(candidate, weeks = 1)
@@ -200,7 +238,10 @@ class Worker
     def self.keep_best_data_run()    #preserve data with lowest occurance of DEFAULT_WORKER
         if @@scheduled_optimized == [] ||
             (@@scheduled_optimized.count_candidates(DEFAULT_WORKER) > @@scheduled.count_candidates(DEFAULT_WORKER))
-            @@scheduled_optimized = @@scheduled.dup
+            #@@scheduled_optimized = @@scheduled.dup
+            @@scheduled_optimized = @@scheduled         #change #1
         end
+        puts "keep_best... #{@@scheduled_optimized.count_candidates(DEFAULT_WORKER)}"
+        @@scheduled_optimized
     end
 end

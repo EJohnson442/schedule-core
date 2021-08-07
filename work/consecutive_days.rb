@@ -35,19 +35,45 @@ class Consecutive_days < Worker
             loop do
                 # calls parent (worker.get_worker ()) and executes {|candidate| add_...} block that returns true/false at yield
                 worker = super() {|candidate| add_to_schedule = is_valid?(candidate)}
+                #puts "loop worker valid = #{worker}"
                 break if add_to_schedule || (worker == Worker::DEFAULT_WORKER)
             end
             worker
         end
 
         def is_valid?(candidate)
+            #in_worker_list = @worker_list.include?(candidate)
+            #in_prior_weeks = candidate_in_prior_weeks?(candidate)
+
             is_valid = !@worker_list.include?(candidate)
-            if @@scheduled.has_full_week_scheduled?()
-                if @@scheduled.found_in_prior_week(candidate)
+            if @@scheduled.has_full_week_scheduled?()   #THIS IS ABSOLUTELY NECESSARY!!!!!
+                if candidate_in_prior_weeks2?(candidate)
+                    #puts "candidate_in_prior_weeks: #{candidate}"
                     is_valid = false
                 end
             end
-            is_valid
+            #puts "PRIOR WEEKS****************************************************"
+            cnt = @@scheduled.count_candidates(candidate) + 2
+            #puts "is_valid: #{is_valid} / cnt: #{cnt} <= assignments: #{Worker.max_monthly_assignments} - #{candidate} / #{@schedule_type}"
+            (is_valid and cnt <= Worker.max_monthly_assignments)
+        end
+=begin
+        def is_valid?(candidate)
+            is_valid = !@worker_list.include?(candidate)
+            #if @@scheduled.has_full_week_scheduled?()
+                if candidate_in_prior_weeks?(candidate)
+                    puts "candidate_in_prior_weeks: #{candidate}"
+                    is_valid = false
+                end
+            #end
+            #puts "PRIOR WEEKS****************************************************"
+            cnt = @@scheduled.count_candidates(candidate) + 2
+            #puts "is_valid: #{is_valid} / cnt: #{cnt} <= assignments: #{Worker.max_monthly_assignments} - #{candidate} / #{@schedule_type}"
+            (is_valid and cnt <= Worker.max_monthly_assignments)
+        end
+=end
+        def candidate_in_prior_weeks2?(candidate)
+            valid = super(candidate)
         end
 
         def new_day(current_day)
