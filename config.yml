@@ -7,8 +7,8 @@ max_times_assigned_to_task: 2
 allow_consecutive_weeks: false
 
 #schedule.rb
+#rerun_max: 35
 rerun_max: 35
-#rerun_max: 1
 month: 7
 year: 2017
 

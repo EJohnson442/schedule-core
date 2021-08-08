@@ -5,28 +5,31 @@ class Worker
 
     DEFAULT_WORKER = "unresolved"
     
-    @@scheduled_optimized = @@scheduled = []
+    @@scheduled_optimized = []
+    @@scheduled = []
     @@priority_workers = []
+    @@schedule_count = 0
 
     class << self                   #Class instance variables total_daily_tasks_count
-        attr_accessor :daily_tasks_list_count, :max_monthly_assignments, :max_times_assigned_to_task, :scheduled_days_count, :priority_schedule_types
+        attr_accessor :daily_tasks_list_count, :max_monthly_assignments, :max_times_assigned_to_task, 
+        :scheduled_days_count, :priority_schedule_types, :preserve_priority_workers, :rerun_max
     end
 
-    #access class variables
-    def self.scheduled()
-        @@scheduled_optimized
-    end
-=begin
-    #access class variables
-    def self.scheduled()
-        #@@scheduled_optimized = [] ? @@scheduled.clone : @@scheduled_optimized.clone
-        @@scheduled_optimized = [] ? @@scheduled : @@scheduled_optimized        # change #2
-        @@scheduled_optimized
-    end
-=end
     def self.data_reset()
-        keep_best_data_run()
+        @@schedule_count = @@schedule_count + 1
+        default_workers_count = keep_best_data_run()
         @@scheduled.clear
+        default_workers_count
+    end
+
+    def self.final_data()
+        @@scheduled_optimized
+    end
+
+    def self.schedule_ready()
+        default_workers_count = keep_best_data_run()
+        @@scheduled.clear
+        schedule_ready = ((@@schedule_count = @@schedule_count + 1) >= Worker.rerun_max)
     end
 
     def initialize(schedule_type)
@@ -60,10 +63,11 @@ class Worker
                 if yield(candidate)
                     workers_scheduled += 1
                     worker = candidate
-                    @@priority_workers.remove_worker(candidate)
+                    @@priority_workers.remove_worker(candidate) if !Worker.preserve_priority_workers
                     break
                 end
-            elsif !@@priority_workers.is_priority?(candidate)
+            #elsif !@@priority_workers.is_priority?(candidate)
+            elsif !@@priority_workers.include?(candidate)
                 if is_valid?(candidate)
                     workers_scheduled += 1
                     worker = candidate
@@ -161,6 +165,15 @@ class Worker
         total
     end
 
+    def self.count_candidates(data_array, candidate, schedule_type = nil)
+        total = 0
+        data_array.each do |c|
+            schedule_type != nil ? detail = c[schedule_type] : detail = c.values[0]
+            total += 1 if detail == candidate
+        end
+        total
+    end
+
     def @@scheduled.position_of(candidate)
         pos = 0
         each { |c| c.values[0] == candidate ? break : pos += 1 }
@@ -222,10 +235,6 @@ class Worker
             self.delete_at(self.index(worker))
         end
     end
-
-    def @@priority_workers.is_priority?(worker)
-        self.include?(worker)
-    end
     #BEGIN: @@priority_workers methods
     def prioritize_workers()     #order workers from least assigned to most assigned
         workers = []
@@ -234,14 +243,16 @@ class Worker
         end
         workers
     end
-    
+
     def self.keep_best_data_run()    #preserve data with lowest occurance of DEFAULT_WORKER
-        if @@scheduled_optimized == [] ||
-            (@@scheduled_optimized.count_candidates(DEFAULT_WORKER) > @@scheduled.count_candidates(DEFAULT_WORKER))
-            #@@scheduled_optimized = @@scheduled.dup
-            @@scheduled_optimized = @@scheduled         #change #1
+        default_workers = -1
+        if @@scheduled_optimized == []
+            @@scheduled.each {|worker| @@scheduled_optimized.append(worker.clone())}  #must use clone() for this to work properly
+            default_workers = @@scheduled.count_candidates(DEFAULT_WORKER)
+        elsif ((default_workers = count_candidates(@@scheduled_optimized, DEFAULT_WORKER)) > @@scheduled.count_candidates(DEFAULT_WORKER))
+            @@scheduled_optimized.clear()
+            @@scheduled.each {|worker| @@scheduled_optimized.append(worker.clone())}
         end
-        puts "keep_best... #{@@scheduled_optimized.count_candidates(DEFAULT_WORKER)}"
-        @@scheduled_optimized
-    end
+        default_workers
+    end    
 end

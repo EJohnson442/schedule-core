@@ -21,14 +21,15 @@ module Schedule_maker
             Worker.max_times_assigned_to_task = @config.config_data['max_times_assigned_to_task']
             Worker.scheduled_days_count = @config.config_data['scheduled_days'].count
             Worker.priority_schedule_types = @config.config_data['priority_schedule_types']
+            Worker.preserve_priority_workers = @config.config_data['preserve_priority_workers']
+            Worker.rerun_max = @config.config_data['rerun_max']
             @run_tests = @config.config_data['run_tests']
             make_schedule(@config.config_data['rerun_max'])
         end
 
         def generate_calendar(calendar_run)
             begin
-                calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @daily_task_list, Worker.scheduled)
-                puts calendar_data
+                calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @daily_task_list, Worker.final_data)
                 calendar(calendar_data)
             rescue => e
                 exception_msg(__method__, e.message)
@@ -36,19 +37,13 @@ module Schedule_maker
         end
 
         protected
-            def make_schedule(rerun_max)
+        def make_schedule(rerun_max)
                 rerun = false
-                rerun_count = 0
                 calendar = []
                 begin
                     calendar = initialize_calendar()
-                    Worker.data_reset() if rerun
+                    rerun = !Worker.schedule_ready()
                     calendar.each{|day| @daily_task_list.each { |schedule_type| select_worker(schedule_type, day) }}
-                    break if rerun_max < rerun_count += 1
-                    default_cnt = Worker.scheduled.count_candidates(Worker::DEFAULT_WORKER)
-                    #puts "default_cnt: #{default_cnt}"
-                    rerun = default_cnt > 0
-                    info_make_schedule(default_cnt, rerun_count, rerun_max) if @run_tests
                 end while rerun
             end
 
