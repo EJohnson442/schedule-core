@@ -29,7 +29,7 @@ module Schedule_maker
 
         def generate_calendar(calendar_run)
             begin
-                calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @daily_task_list, Worker.final_data)
+                calendar_data = CALENDAR_DATA.new(calendar_run, initialize_calendar(false), @daily_task_list, Worker.schedule_data)
                 calendar(calendar_data)
             rescue => e
                 exception_msg(__method__, e.message)

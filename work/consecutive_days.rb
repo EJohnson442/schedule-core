@@ -35,46 +35,51 @@ class Consecutive_days < Worker
             loop do
                 # calls parent (worker.get_worker ()) and executes {|candidate| add_...} block that returns true/false at yield
                 worker = super() {|candidate| add_to_schedule = is_valid?(candidate)}
-                #puts "loop worker valid = #{worker}"
                 break if add_to_schedule || (worker == Worker::DEFAULT_WORKER)
             end
             worker
         end
 
         def is_valid?(candidate)
-            #in_worker_list = @worker_list.include?(candidate)
-            #in_prior_weeks = candidate_in_prior_weeks?(candidate)
-
             is_valid = !@worker_list.include?(candidate)
             if @@scheduled.has_full_week_scheduled?()   #THIS IS ABSOLUTELY NECESSARY!!!!!
-                if candidate_in_prior_weeks2?(candidate)
-                    #puts "candidate_in_prior_weeks: #{candidate}"
+                if candidate_in_prior_weeks?(candidate)
                     is_valid = false
                 end
             end
-            #puts "PRIOR WEEKS****************************************************"
-            cnt = @@scheduled.count_candidates(candidate) + 2
-            #puts "is_valid: #{is_valid} / cnt: #{cnt} <= assignments: #{Worker.max_monthly_assignments} - #{candidate} / #{@schedule_type}"
-            (is_valid and cnt <= Worker.max_monthly_assignments)
+            count_candidates = @@scheduled.count_candidates(candidate) + 2
+            (is_valid and count_candidates <= Worker.max_monthly_assignments)
         end
-=begin
-        def is_valid?(candidate)
-            is_valid = !@worker_list.include?(candidate)
-            #if @@scheduled.has_full_week_scheduled?()
-                if candidate_in_prior_weeks?(candidate)
-                    puts "candidate_in_prior_weeks: #{candidate}"
-                    is_valid = false
+
+        def candidate_in_prior_weeks?(candidate, weeks = 1)
+            tasks_per_week = Worker.daily_tasks_list_count * Worker.scheduled_days_count
+            data_length = @@scheduled.length
+            if data_length >= tasks_per_week
+                #Ensures same data range while reviewing multiple days
+                consec_days_adjust = data_length % tasks_per_week
+                start_ndx = data_length - tasks_per_week > 0 ? data_length - tasks_per_week : 0
+                end_ndx = data_length - 1
+                if consec_days_adjust > 0
+                    start_ndx = start_ndx - consec_days_adjust
+                    end_ndx = end_ndx - consec_days_adjust
                 end
-            #end
-            #puts "PRIOR WEEKS****************************************************"
-            cnt = @@scheduled.count_candidates(candidate) + 2
-            #puts "is_valid: #{is_valid} / cnt: #{cnt} <= assignments: #{Worker.max_monthly_assignments} - #{candidate} / #{@schedule_type}"
-            (is_valid and cnt <= Worker.max_monthly_assignments)
+                candidate_in_prior_weeks_log(__method__, start_ndx, data_length - 1, tasks_per_week, data_length) if @run_tests
+                found_it = @@scheduled.found_candidate?(candidate, [start_ndx, end_ndx])
+            end
+            found_it
         end
-=end
-        def candidate_in_prior_weeks2?(candidate)
-            valid = super(candidate)
-        end
+    
+        def @@scheduled.found_candidate?(candidate, data_location)
+            found = false
+            range_data = self[data_location[0]..data_location[1]]
+            range_data.each do |c|
+                if c.values[0] == candidate
+                    found = true
+                    break
+                end
+            end
+            found
+        end    
 
         def new_day(current_day)
             @current_day = current_day
