@@ -20,8 +20,9 @@ class Worker
     end
 
     def self.schedule_ready()
-        default_workers_count = keep_best_data_run()
+        keep_best_data_run()
         @@scheduled.clear
+        self_schedule_ready_log(__method__,"@@scheduled_optimized defaults counted: #{@@scheduled.count_candidates(DEFAULT_WORKER, nil, @@scheduled_optimized)}") if @run_tests
         schedule_ready = ((@@schedule_count += 1) >= Worker.rerun_max)
     end
 
@@ -81,108 +82,78 @@ class Worker
     end
 
     protected
-    #BEGIN: Validation
     def is_valid?(candidate)
-        is_valid = false
-        if !candidate_in_prior_weeks?(candidate)
-            monthly_assignments_exceeded = @@scheduled.count_candidates(candidate) + 1 > self.class.max_monthly_assignments
-            times_assigned_to_task_exceeded = @@scheduled.count_candidates(candidate, @schedule_type) + 1 > self.class.max_times_assigned_to_task
-            is_valid = (!monthly_assignments_exceeded and !times_assigned_to_task_exceeded)    
+        is_valid = true
+        monthly_assignments_exceeded = @@scheduled.count_candidates(candidate) + 1 > self.class.max_monthly_assignments
+        times_assigned_to_task_exceeded = @@scheduled.count_candidates(candidate, @schedule_type) + 1 > self.class.max_times_assigned_to_task
+        multiple_assignments = candidate_in_prior_weeks?(candidate,0)
+
+        if monthly_assignments_exceeded or times_assigned_to_task_exceeded or multiple_assignments
+            is_valid = false
         end
+        #TESTING SUGGESTS THAT THIS VALIDATION IS NOT VERY HELPFUL & SHOULD NOT BE USED
+        #MORE SHOULD BE INVESTED IN MAXIMIZING CANDIDATE DISTRUBITION
+        #TBD: FLESH OUT LOGIC w/ config entried
         is_valid
     end
-
+#IN USE AND THESE WORK TOGETHER**************************************************************************
     def candidate_in_prior_weeks?(candidate, weeks = 1)
-        tasks_per_week = self.class.daily_tasks_list_count * self.class.scheduled_days_count
-        data_length = @@scheduled.length
-        if data_length < (tasks_per_week * weeks)
-            start_ndx = 0
-        else #data_length % tasks_per_week >= 0
-            start_ndx = ((data_length / tasks_per_week) * tasks_per_week)
-        end
-        candidate_in_prior_weeks_log(__method__, start_ndx, data_length - 1, tasks_per_week, data_length) if @run_tests
-        @@scheduled.found_candidate?(candidate, [start_ndx, data_length - 1])
+        data_range_config = {}
+        data_range_config[:data_length] = @@scheduled.length
+        data_range_config[:daily_tasks_count] = self.class.daily_tasks_list_count
+        data_range_config[:schedule_count] = self.class.scheduled_days_count
+        #weeks is usually 1/more. Determines how many weeks to consider including partial week
+        #weeks = 0 will set :partial_week to true and: 
+        #1) Calculate only remaining partial week. Check only the current week for the occurance of a worker
+        #2) Review only prior weeks
+		if weeks == 0
+        	data_range_config[:partial_week] = true
+		else
+        	data_range_config[:partial_week] = false
+		end
+        data_range_config[:weeks] = weeks
+        data_range_array = get_data_range_array(data_range_config)
+        @@scheduled.found_candidate?(candidate, data_range_array)
     end
-    #END: Validation
-    #BEGIN: @@scheduled methods
-    def @@scheduled.found_candidate?(candidate, data_location)
+
+    def get_data_range_array(config)
+        one_week = config[:daily_tasks_count] * config[:schedule_count]
+        part_week = config[:data_length] % one_week
+        if config[:partial_week]
+            start_ndx = config[:data_length] < one_week ? 0 : config[:data_length] - (part_week)
+        else
+            start_ndx = config[:data_length] - ((one_week * config[:weeks]) + part_week)
+        end
+        end_ndx = config[:data_length] - 1
+                    
+        [start_ndx, end_ndx]
+    end	
+
+    def @@scheduled.found_candidate?(candidate, data_range_array)
         found = false
-        range_data = self[data_location[0]..data_location[1]]
-        range_data.each do |c|
-            if c.values[0] == candidate
+        range_data = self[data_range_array[0]..data_range_array[1]]
+        range_data.each do |candidates|
+            if candidates.values[0] == candidate
                 found = true
                 break
             end
-        end                 
+        end
         found
     end
 
-    def @@scheduled.count_candidates(candidate, schedule_type = nil)
+#IN USE AND THESE WORK TOGETHER**************************************************************************
+    def @@scheduled.count_candidates(candidate, schedule_type = nil, data_array = nil)
         total = 0
-        each do |c|
-            schedule_type != nil ? detail = c[schedule_type] : detail = c.values[0]
+        data = data_array == nil ? self : data_array
+        data.each do |candidates|
+            schedule_type != nil ? detail = candidates[schedule_type] : detail = candidates.values[0]
             total += 1 if detail == candidate
         end
         total
-    end
-
-    def self.count_candidates(data_array, candidate, schedule_type = nil)
-        total = 0
-        data_array.each do |c|
-            schedule_type != nil ? detail = c[schedule_type] : detail = c.values[0]
-            total += 1 if detail == candidate
-        end
-        total
-    end
-
-    def @@scheduled.position_of(candidate)
-        pos = 0
-        each { |c| c.values[0] == candidate ? break : pos += 1 }
-        pos
-    end
-
-    def @@scheduled.tasks_in_a_week()
-        #self.class.daily_tasks_list_count & any self.class... (class instance variables)
-        #are inaccessable outside Worker class. This is the workaround.
-        Worker.daily_tasks_list_count * Worker.scheduled_days_count
     end
 
     def @@scheduled.has_full_week_scheduled?()
-        self.length >= self.tasks_in_a_week()
-    end
-
-    def @@scheduled.prior_week_range()
-        if self.has_full_week_scheduled?()
-            tasks_per_week = self.tasks_in_a_week()
-            weeks_scheduled = self.length / tasks_per_week
-            prior_week_start = (weeks_scheduled - 1) * tasks_per_week
-            prior_week_end = (weeks_scheduled * tasks_per_week) - 1
-            [prior_week_start, prior_week_end]
-        end
-    end
-
-    def @@scheduled.prior_weeks_range(weeks = 1)     #this functionality should be determined externally by calling method 07.31.2021
-        if self.has_full_week_scheduled?()
-            tasks_per_week = self.tasks_in_a_week()
-            part_week = self.length % tasks_per_week
-            start_ndx = self.length > (tasks_per_week * weeks) ? (self.length - part_week) - (tasks_per_week * weeks) : 0                
-            [start_ndx, self.length - 1]
-        end
-    end
-
-    def @@scheduled.found_in_prior_week(candidate)
-        found = false
-        if self.has_full_week_scheduled?()
-            search = self.prior_week_range()    #yeah this is bad - to be reworked 07.31.2021
-            range_data = self[search[0]..search[1]]
-            range_data.each do |c|
-                if c.values[0] == candidate
-                    found = true
-                    break
-                end
-            end                    
-        end
-        found
+        self.length >= Worker.daily_tasks_list_count * Worker.scheduled_days_count
     end
     #END: @@scheduled methods
     #BEGIN: @@priority_workers methods
@@ -206,13 +177,13 @@ class Worker
     end
 
     def self.keep_best_data_run()    #preserve data with lowest occurance of DEFAULT_WORKER
-        default_workers = -1
+        default_workers = 0
         if @@scheduled_optimized == []
-            @@scheduled.each {|worker| @@scheduled_optimized.append(worker.clone())}  #must use clone() for this to work properly
+            @@scheduled.each {|worker| @@scheduled_optimized << worker}  #must use clone() for this to work properly
             default_workers = @@scheduled.count_candidates(DEFAULT_WORKER)
-        elsif ((default_workers = count_candidates(@@scheduled_optimized, DEFAULT_WORKER)) > @@scheduled.count_candidates(DEFAULT_WORKER))
+        elsif ((default_workers = @@scheduled.count_candidates(DEFAULT_WORKER, nil, @@scheduled_optimized)) > @@scheduled.count_candidates(DEFAULT_WORKER))
             @@scheduled_optimized.clear()
-            @@scheduled.each {|worker| @@scheduled_optimized.append(worker.clone())}
+            @@scheduled.each {|worker| @@scheduled_optimized << worker}
         end
         default_workers
     end    

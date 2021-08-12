@@ -38,8 +38,6 @@ module Schedule_maker
 
         protected
         def make_schedule(rerun_max)
-                rerun = false
-                calendar = []
                 begin
                     calendar = initialize_calendar()
                     rerun = !Worker.schedule_ready()

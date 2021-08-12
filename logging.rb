@@ -11,6 +11,11 @@ def is_valid_log(method_name, *args)
     Logs.debug("monthly assignments exceeded = #{args[2]} / times assigned to task exceeded = #{args[3]}")
 end
 
+def self_schedule_ready_log(method_name, *args)
+    Logs.debug("Method name: #{method_name}")
+    Logs.debug("args: #{args[0]}")
+end
+
 def get_custom_worker_log(method_name, *args)
     Logs.debug("Method name: #{method_name}")
     Logs.debug("args: #{args[0]}")

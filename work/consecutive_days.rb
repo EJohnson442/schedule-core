@@ -32,6 +32,7 @@ class Consecutive_days < Worker
         def get_worker()
             add_to_schedule = false
             worker = Worker::DEFAULT_WORKER
+
             loop do
                 # calls parent (worker.get_worker ()) and executes {|candidate| add_...} block that returns true/false at yield
                 worker = super() {|candidate| add_to_schedule = is_valid?(candidate)}
@@ -68,18 +69,6 @@ class Consecutive_days < Worker
             end
             found_it
         end
-    
-        def @@scheduled.found_candidate?(candidate, data_location)
-            found = false
-            range_data = self[data_location[0]..data_location[1]]
-            range_data.each do |c|
-                if c.values[0] == candidate
-                    found = true
-                    break
-                end
-            end
-            found
-        end    
 
         def new_day(current_day)
             @current_day = current_day
