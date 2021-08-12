@@ -43,31 +43,16 @@ class Consecutive_days < Worker
 
         def is_valid?(candidate)
             is_valid = !@worker_list.include?(candidate)
-            if @@scheduled.has_full_week_scheduled?()   #THIS IS ABSOLUTELY NECESSARY!!!!!
-                if candidate_in_prior_weeks?(candidate)
+            if @@scheduled.length >= (Worker.daily_tasks_list_count * Worker.scheduled_days_count)
+            #if @@scheduled.has_full_week_scheduled?()   #THIS IS ABSOLUTELY NECESSARY!!!!!
+                worker_helper = Data_tools::Worker_data.new(candidate,@@scheduled,Worker.daily_tasks_list_count,Worker.scheduled_days_count,0)
+                weekly_multiple_assignments = Data_tools::candidate_in_prior_weeks?(worker_helper)
+                if weekly_multiple_assignments
                     is_valid = false
                 end
             end
             count_candidates = @@scheduled.count_candidates(candidate) + 2
             (is_valid and count_candidates <= Worker.max_monthly_assignments)
-        end
-
-        def candidate_in_prior_weeks?(candidate, weeks = 1)
-            tasks_per_week = Worker.daily_tasks_list_count * Worker.scheduled_days_count
-            data_length = @@scheduled.length
-            if data_length >= tasks_per_week
-                #Ensures same data range while reviewing multiple days
-                consec_days_adjust = data_length % tasks_per_week
-                start_ndx = data_length - tasks_per_week > 0 ? data_length - tasks_per_week : 0
-                end_ndx = data_length - 1
-                if consec_days_adjust > 0
-                    start_ndx = start_ndx - consec_days_adjust
-                    end_ndx = end_ndx - consec_days_adjust
-                end
-                candidate_in_prior_weeks_log(__method__, start_ndx, data_length - 1, tasks_per_week, data_length) if @run_tests
-                found_it = @@scheduled.found_candidate?(candidate, [start_ndx, end_ndx])
-            end
-            found_it
         end
 
         def new_day(current_day)

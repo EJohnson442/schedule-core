@@ -8,7 +8,7 @@ allow_consecutive_weeks: false
 
 #schedule.rb
 #rerun_max: 35
-rerun_max: 5
+rerun_max: 7
 month: 7
 year: 2017
 

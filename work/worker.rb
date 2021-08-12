@@ -1,4 +1,5 @@
 require 'logging'
+require_relative 'worker_helper'
 
 class Worker
     attr_reader :schedule_type, :workers
@@ -86,62 +87,15 @@ class Worker
         is_valid = true
         monthly_assignments_exceeded = @@scheduled.count_candidates(candidate) + 1 > self.class.max_monthly_assignments
         times_assigned_to_task_exceeded = @@scheduled.count_candidates(candidate, @schedule_type) + 1 > self.class.max_times_assigned_to_task
-        multiple_assignments = candidate_in_prior_weeks?(candidate,0)
+        worker_helper = Data_tools::Worker_data.new(candidate,@@scheduled,self.class.daily_tasks_list_count,self.class.scheduled_days_count,0)
+        weekly_multiple_assignments = Data_tools::candidate_in_prior_weeks?(worker_helper)
 
-        if monthly_assignments_exceeded or times_assigned_to_task_exceeded or multiple_assignments
+        if monthly_assignments_exceeded or times_assigned_to_task_exceeded or weekly_multiple_assignments
             is_valid = false
         end
-        #TESTING SUGGESTS THAT THIS VALIDATION IS NOT VERY HELPFUL & SHOULD NOT BE USED
-        #MORE SHOULD BE INVESTED IN MAXIMIZING CANDIDATE DISTRUBITION
-        #TBD: FLESH OUT LOGIC w/ config entried
         is_valid
     end
-#IN USE AND THESE WORK TOGETHER**************************************************************************
-    def candidate_in_prior_weeks?(candidate, weeks = 1)
-        data_range_config = {}
-        data_range_config[:data_length] = @@scheduled.length
-        data_range_config[:daily_tasks_count] = self.class.daily_tasks_list_count
-        data_range_config[:schedule_count] = self.class.scheduled_days_count
-        #weeks is usually 1/more. Determines how many weeks to consider including partial week
-        #weeks = 0 will set :partial_week to true and: 
-        #1) Calculate only remaining partial week. Check only the current week for the occurance of a worker
-        #2) Review only prior weeks
-		if weeks == 0
-        	data_range_config[:partial_week] = true
-		else
-        	data_range_config[:partial_week] = false
-		end
-        data_range_config[:weeks] = weeks
-        data_range_array = get_data_range_array(data_range_config)
-        @@scheduled.found_candidate?(candidate, data_range_array)
-    end
 
-    def get_data_range_array(config)
-        one_week = config[:daily_tasks_count] * config[:schedule_count]
-        part_week = config[:data_length] % one_week
-        if config[:partial_week]
-            start_ndx = config[:data_length] < one_week ? 0 : config[:data_length] - (part_week)
-        else
-            start_ndx = config[:data_length] - ((one_week * config[:weeks]) + part_week)
-        end
-        end_ndx = config[:data_length] - 1
-                    
-        [start_ndx, end_ndx]
-    end	
-
-    def @@scheduled.found_candidate?(candidate, data_range_array)
-        found = false
-        range_data = self[data_range_array[0]..data_range_array[1]]
-        range_data.each do |candidates|
-            if candidates.values[0] == candidate
-                found = true
-                break
-            end
-        end
-        found
-    end
-
-#IN USE AND THESE WORK TOGETHER**************************************************************************
     def @@scheduled.count_candidates(candidate, schedule_type = nil, data_array = nil)
         total = 0
         data = data_array == nil ? self : data_array
@@ -152,11 +106,6 @@ class Worker
         total
     end
 
-    def @@scheduled.has_full_week_scheduled?()
-        self.length >= Worker.daily_tasks_list_count * Worker.scheduled_days_count
-    end
-    #END: @@scheduled methods
-    #BEGIN: @@priority_workers methods
     def @@priority_workers.add_workers(workers)
         workers.each {|worker| self.push(worker)}
     end
@@ -167,7 +116,7 @@ class Worker
             self.delete_at(self.index(worker))
         end
     end
-    #BEGIN: @@priority_workers methods
+    
     def prioritize_workers()     #order workers from least assigned to most assigned
         workers = []
         (0..@workers.length).each do |counter|
