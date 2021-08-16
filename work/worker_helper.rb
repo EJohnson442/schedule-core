@@ -1,5 +1,3 @@
-require 'logging'
-
 module Data_tools
     extend self
     Worker_data = Struct.new(:candidate, :data, :daily_tasks_list_count, :scheduled_days_count, :weeks)
@@ -9,7 +7,7 @@ module Data_tools
         data_range_config[:data_length] = worker_data.data.length
         data_range_config[:daily_tasks_count] = worker_data.daily_tasks_list_count
         data_range_config[:schedule_count] = worker_data.scheduled_days_count
-        #weeks is usually 1/more. Determines how many weeks to consider including partial week
+        #weeks is usually >= 1. Determines how many weeks to consider including partial week
         #weeks = 0 will set :partial_week to true and: 
         #1) Calculate only remaining partial week. Check only the current week for the occurance of a worker
         #2) Review only prior weeks
@@ -48,5 +46,6 @@ module Data_tools
         found
     end
 
+    #module_function :candidate_in_prior_weeks?
     private :get_data_range_array, :found_candidate?
 end

@@ -23,7 +23,8 @@ class Worker
     def self.schedule_ready()
         keep_best_data_run()
         @@scheduled.clear
-        self_schedule_ready_log(__method__,"@@scheduled_optimized defaults counted: #{@@scheduled.count_candidates(DEFAULT_WORKER, nil, @@scheduled_optimized)}") if @run_tests
+        self_schedule_ready_log(__method__,
+            "@@scheduled_optimized defaults counted: #{@@scheduled.count_candidates(DEFAULT_WORKER, nil, @@scheduled_optimized)}") if @run_tests
         schedule_ready = ((@@schedule_count += 1) >= Worker.rerun_max)
     end
 
@@ -56,7 +57,7 @@ class Worker
         worker_data.each do |candidate|
             if block_given?
                 if yield(candidate)
-                    workers_scheduled += 1
+                    workers_scheduled += 1  #consider this is not needed because - if (workers_scheduled == 0) && (self.class == Worker)
                     worker = candidate
                     @@priority_workers.remove_worker(candidate) if !Worker.preserve_priority_workers
                     break

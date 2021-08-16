@@ -29,5 +29,13 @@ run_tests: false
 #priority_schedule_types: {schedule_type: required monthly workers}
 #If the priority type is SOUND, then the SOUND task must be completed before other tasks can be undertaken.
 priority_schedule_types: {SOUND: 8}
-preserve_priority_workers: false
+preserve_priority_workers: true
 #2_many_workers: {types: [:NONE,:HALF,:ONE,:TWO], {init: :NONE}}
+---
+NOTES:
+1) Consecutive_days must be <= max_monthly_assignments
+2) max_times_assigned_to_task <= max_monthly_assignments
+3) Should scheduled days = SUN: 1, MON: 2, TUE: 3, WED: 4, THU: 5, FRI: 6, SAT: 7
+4) 
+
+---

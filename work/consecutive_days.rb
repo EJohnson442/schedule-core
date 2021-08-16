@@ -44,14 +44,13 @@ class Consecutive_days < Worker
         def is_valid?(candidate)
             is_valid = !@worker_list.include?(candidate)
             if @@scheduled.length >= (Worker.daily_tasks_list_count * Worker.scheduled_days_count)
-            #if @@scheduled.has_full_week_scheduled?()   #THIS IS ABSOLUTELY NECESSARY!!!!!
                 worker_helper = Data_tools::Worker_data.new(candidate,@@scheduled,Worker.daily_tasks_list_count,Worker.scheduled_days_count,0)
                 weekly_multiple_assignments = Data_tools::candidate_in_prior_weeks?(worker_helper)
                 if weekly_multiple_assignments
                     is_valid = false
                 end
             end
-            count_candidates = @@scheduled.count_candidates(candidate) + 2
+            count_candidates = @@scheduled.count_candidates(candidate) + @consecutive_days
             (is_valid and count_candidates <= Worker.max_monthly_assignments)
         end
 
