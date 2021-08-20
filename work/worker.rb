@@ -57,25 +57,19 @@ class Worker
         worker_data.each do |candidate|
             if block_given?
                 if yield(candidate)
-                    workers_scheduled += 1  #consider this is not needed because - if (workers_scheduled == 0) && (self.class == Worker)
                     worker = candidate
                     @@priority_workers.remove_worker(candidate) if !Worker.preserve_priority_workers
                     break
                 end
-            elsif !@@priority_workers.include?(candidate)
-                if is_valid?(candidate)
-                    workers_scheduled += 1
-                    worker = candidate
-                    schedule_worker(worker)
-                    break
-                end
+            elsif is_valid?(candidate)
+                workers_scheduled += 1
+                worker = candidate
+                schedule_worker(worker)
+                break
             end
         end
 
-        if (workers_scheduled == 0) && (self.class == Worker)
-            worker = DEFAULT_WORKER
-            schedule_worker(worker)
-        end
+        schedule_worker(DEFAULT_WORKER) if (workers_scheduled == 0) && (self.class == Worker)
         worker
     end
 
@@ -85,14 +79,16 @@ class Worker
 
     protected
     def is_valid?(candidate)
-        is_valid = true
-        monthly_assignments_exceeded = @@scheduled.count_candidates(candidate) + 1 > self.class.max_monthly_assignments
-        times_assigned_to_task_exceeded = @@scheduled.count_candidates(candidate, @schedule_type) + 1 > self.class.max_times_assigned_to_task
-        worker_helper = Data_tools::Worker_data.new(candidate,@@scheduled,self.class.daily_tasks_list_count,self.class.scheduled_days_count,0)
-        weekly_multiple_assignments = Data_tools::candidate_in_prior_weeks?(worker_helper)
+        is_valid = !@@priority_workers.include?(candidate)
+        if is_valid
+            monthly_assignments_exceeded = @@scheduled.count_candidates(candidate) + 1 > self.class.max_monthly_assignments
+            times_assigned_to_task_exceeded = @@scheduled.count_candidates(candidate, @schedule_type) + 1 > self.class.max_times_assigned_to_task
+            worker_helper = Data_tools::Worker_data.new(candidate,@@scheduled,self.class.daily_tasks_list_count,self.class.scheduled_days_count,0)
+            weekly_multiple_assignments = Data_tools::candidate_in_prior_weeks?(worker_helper)
 
-        if monthly_assignments_exceeded or times_assigned_to_task_exceeded or weekly_multiple_assignments
-            is_valid = false
+            if monthly_assignments_exceeded or times_assigned_to_task_exceeded or weekly_multiple_assignments
+                is_valid = false
+            end
         end
         is_valid
     end
@@ -127,14 +123,9 @@ class Worker
     end
 
     def self.keep_best_data_run()    #preserve data with lowest occurance of DEFAULT_WORKER
-        default_workers = 0
-        if @@scheduled_optimized == []
-            @@scheduled.each {|worker| @@scheduled_optimized << worker}  #must use clone() for this to work properly
-            default_workers = @@scheduled.count_candidates(DEFAULT_WORKER)
-        elsif ((default_workers = @@scheduled.count_candidates(DEFAULT_WORKER, nil, @@scheduled_optimized)) > @@scheduled.count_candidates(DEFAULT_WORKER))
-            @@scheduled_optimized.clear()
-            @@scheduled.each {|worker| @@scheduled_optimized << worker}
+        if (@@scheduled_optimized == []) || 
+            ((@@scheduled.count_candidates(DEFAULT_WORKER, nil, @@scheduled_optimized)) > @@scheduled.count_candidates(DEFAULT_WORKER))
+            @@scheduled_optimized = @@scheduled.dup
         end
-        default_workers
     end    
 end
