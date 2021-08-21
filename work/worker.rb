@@ -32,7 +32,7 @@ class Worker
         @schedule_type = schedule_type
         if block_given?
             @workers = yield(schedule_type)
-            if @workers.length > 0 and Worker.priority_schedule_types.keys.include?(schedule_type.to_s)
+            if (@workers.length > 0) and Worker.priority_schedule_types.keys.include?(schedule_type.to_s)
                 set_priority_workers(@workers)
             end
         end
@@ -81,14 +81,13 @@ class Worker
     def is_valid?(candidate)
         is_valid = !@@priority_workers.include?(candidate)
         if is_valid
-            monthly_assignments_exceeded = @@scheduled.count_candidates(candidate) + 1 > self.class.max_monthly_assignments
-            times_assigned_to_task_exceeded = @@scheduled.count_candidates(candidate, @schedule_type) + 1 > self.class.max_times_assigned_to_task
-            worker_helper = Data_tools::Worker_data.new(candidate,@@scheduled,self.class.daily_tasks_list_count,self.class.scheduled_days_count,0)
-            weekly_multiple_assignments = Data_tools::candidate_in_prior_weeks?(worker_helper)
-
-            if monthly_assignments_exceeded or times_assigned_to_task_exceeded or weekly_multiple_assignments
-                is_valid = false
-            end
+            #monthly assignments exceeded
+            return false if (@@scheduled.count_candidates(candidate) + 1 > self.class.max_monthly_assignments)
+            #times assigned to task exceeded
+            return false if (@@scheduled.count_candidates(candidate, @schedule_type) + 1 > self.class.max_times_assigned_to_task)
+            worker_data = Data_tools::Worker_data.new(candidate,@@scheduled,self.class.daily_tasks_list_count,self.class.scheduled_days_count,0)
+            #multiple weekly assignments
+            return false if Data_tools::candidate_in_prior_weeks?(worker_data)
         end
         is_valid
     end
@@ -109,7 +108,7 @@ class Worker
 
     def @@priority_workers.remove_worker(worker)
         #only delete first occurance
-        if self.length > 0 and self.include?(worker)
+        if (self.length > 0) and self.include?(worker)
             self.delete_at(self.index(worker))
         end
     end
@@ -117,7 +116,7 @@ class Worker
     def prioritize_workers()     #order workers from least assigned to most assigned
         workers = []
         (0..@workers.length).each do |counter|
-            @workers.each {|candidate| workers << candidate if @@scheduled.count_candidates(candidate) <= counter && !workers.include?(candidate)}
+            @workers.each {|candidate| workers << candidate if (@@scheduled.count_candidates(candidate) <= counter) && !workers.include?(candidate)}
         end
         workers
     end

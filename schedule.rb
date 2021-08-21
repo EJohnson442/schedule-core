@@ -23,8 +23,8 @@ module Schedule_maker
             Worker.priority_schedule_types = @config.config_data['priority_schedule_types']
             Worker.preserve_priority_workers = @config.config_data['preserve_priority_workers']
             Worker.rerun_max = @config.config_data['rerun_max']
-            @run_tests = @config.config_data['run_tests']
-            make_schedule(@config.config_data['rerun_max'])
+            @run_tests = @config.config_data['run_tests']   #this doesn't do anything and needs to be fixed
+            make_schedule()
         end
 
         def generate_calendar(calendar_run)
@@ -37,7 +37,7 @@ module Schedule_maker
         end
 
         protected
-        def make_schedule(rerun_max)
+        def make_schedule()
             begin
                 calendar = initialize_calendar()
                 rerun = !Worker.schedule_ready()

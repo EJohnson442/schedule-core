@@ -24,7 +24,7 @@ classes_map: {Consecutive_days: [SOUND, 2], Worker: [STAGE, MICROPHONE, SEATING,
 
 data_dir: "data/"
 
-run_tests: false
+run_tests: true
 
 #priority_schedule_types: {schedule_type: required monthly workers}
 #If the priority type is SOUND, then the SOUND task must be completed before other tasks can be undertaken.
