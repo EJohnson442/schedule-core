@@ -1,7 +1,22 @@
-module Data_tools
+module Validate
     extend self
-    Worker_data = Struct.new(:candidate, :data, :daily_tasks_list_count, :scheduled_days_count, :weeks)
+
+    Worker_data = Struct.new(:candidate, :data, :daily_tasks_list_count, :scheduled_days_count, :weeks, 
+        :max_monthly_assignments, :max_times_assigned_to_task, :schedule_type, :priority_workers)
     
+    def is_valid?(worker_data)
+        is_valid = !worker_data.priority_workers.include?(worker_data.candidate)
+        if is_valid
+            #monthly assignments exceeded
+            return false if (worker_data.data.count_candidates(worker_data.candidate) + 1 > worker_data.max_monthly_assignments)
+            #times assigned to task exceeded
+            return false if (worker_data.data.count_candidates(worker_data.candidate, worker_data.schedule_type) + 1 > worker_data.max_times_assigned_to_task)
+            #multiple weekly assignments
+            return false if candidate_in_prior_weeks?(worker_data)
+        end
+        is_valid
+    end
+
     def candidate_in_prior_weeks?(worker_data)
         data_range_config = {}
         data_range_config[:data_length] = worker_data.data.length
@@ -29,6 +44,7 @@ module Data_tools
         else
             start_ndx = config[:data_length] - ((one_week * config[:weeks]) + part_week)
         end
+        start_ndx = 0 if start_ndx < 0
         end_ndx = config[:data_length] - 1
                     
         [start_ndx, end_ndx]

@@ -4,11 +4,10 @@ max_monthly_assignments: 4
 #max monthly individual task assignments, ex., assign stage = 2 and seating = 2, allowed but seating = 3 NOT allowed
 max_times_assigned_to_task: 2
 #allow consecutive weekly assignments
-allow_consecutive_weeks: false
+allow_consecutive_weeks: false  #this seems to not currently being used
 
 #schedule.rb
-#rerun_max: 35
-rerun_max: 7
+rerun_max: 5
 month: 7
 year: 2017
 
@@ -24,12 +23,15 @@ classes_map: {Consecutive_days: [SOUND, 2], Worker: [STAGE, MICROPHONE, SEATING,
 
 data_dir: "data/"
 
-run_tests: true
+run_tests: false
 
 #priority_schedule_types: {schedule_type: required monthly workers}
 #If the priority type is SOUND, then the SOUND task must be completed before other tasks can be undertaken.
 priority_schedule_types: {SOUND: 8}
 preserve_priority_workers: true
+validate_weeks: 0
+cdays_validate_weeks: 0
+
 #2_many_workers: {types: [:NONE,:HALF,:ONE,:TWO], {init: :NONE}}
 ---
 NOTES:
@@ -37,5 +39,3 @@ NOTES:
 2) max_times_assigned_to_task <= max_monthly_assignments
 3) Should scheduled days = SUN: 1, MON: 2, TUE: 3, WED: 4, THU: 5, FRI: 6, SAT: 7
 4) 
-
----

@@ -5,12 +5,8 @@ require_relative 'calendar'
 module Schedule_maker
     extend self
 
-    attr_reader :schedule_data, :assignments, :config
-
     class Monthly_Schedule
         include Calendar_formats
-
-        attr_reader :schedule
 
         def initialize(prep_schedule, config)
             @prep_schedule = prep_schedule
@@ -23,6 +19,8 @@ module Schedule_maker
             Worker.priority_schedule_types = @config.config_data['priority_schedule_types']
             Worker.preserve_priority_workers = @config.config_data['preserve_priority_workers']
             Worker.rerun_max = @config.config_data['rerun_max']
+            Worker.validate_weeks = @config.config_data['validate_weeks']
+            Worker.cdays_validate_weeks = @config.config_data['cdays_validate_weeks']
             @run_tests = @config.config_data['run_tests']   #this doesn't do anything and needs to be fixed
             make_schedule()
         end

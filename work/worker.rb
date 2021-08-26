@@ -12,8 +12,8 @@ class Worker
     @@schedule_count = 0
 
     class << self                   #Class instance variables total_daily_tasks_count
-        attr_accessor :daily_tasks_list_count, :max_monthly_assignments, :max_times_assigned_to_task, 
-        :scheduled_days_count, :priority_schedule_types, :preserve_priority_workers, :rerun_max
+        attr_accessor :daily_tasks_list_count, :max_monthly_assignments, :max_times_assigned_to_task,:scheduled_days_count,
+        :priority_schedule_types, :preserve_priority_workers, :rerun_max, :validate_weeks, :cdays_validate_weeks
     end
 
     def self.schedule_data()
@@ -46,7 +46,7 @@ class Worker
         else
             use_workers = priority_workers[0..total_workers_needed - 1]
         end
-        @@priority_workers.add_workers(use_workers)
+        @@priority_workers = workers.dup
     end
 
     def get_worker()
@@ -58,7 +58,7 @@ class Worker
             if block_given?
                 if yield(candidate)
                     worker = candidate
-                    @@priority_workers.remove_worker(candidate) if !Worker.preserve_priority_workers
+                    @@priority_workers.delete(candidate) if (@@priority_workers.size > 0) && !Worker.preserve_priority_workers
                     break
                 end
             elsif is_valid?(candidate)
@@ -79,17 +79,10 @@ class Worker
 
     protected
     def is_valid?(candidate)
-        is_valid = !@@priority_workers.include?(candidate)
-        if is_valid
-            #monthly assignments exceeded
-            return false if (@@scheduled.count_candidates(candidate) + 1 > self.class.max_monthly_assignments)
-            #times assigned to task exceeded
-            return false if (@@scheduled.count_candidates(candidate, @schedule_type) + 1 > self.class.max_times_assigned_to_task)
-            worker_data = Data_tools::Worker_data.new(candidate,@@scheduled,self.class.daily_tasks_list_count,self.class.scheduled_days_count,0)
-            #multiple weekly assignments
-            return false if Data_tools::candidate_in_prior_weeks?(worker_data)
-        end
-        is_valid
+        worker_data = Validate::Worker_data.new(candidate,@@scheduled,self.class.daily_tasks_list_count,self.class.scheduled_days_count,
+            self.class.validate_weeks,self.class.max_monthly_assignments, self.class.max_times_assigned_to_task, @schedule_type, @@priority_workers)
+
+        Validate::is_valid?(worker_data)
     end
 
     def @@scheduled.count_candidates(candidate, schedule_type = nil, data_array = nil)
@@ -101,22 +94,14 @@ class Worker
         end
         total
     end
-
-    def @@priority_workers.add_workers(workers)
-        workers.each {|worker| self.push(worker)}
-    end
-
-    def @@priority_workers.remove_worker(worker)
-        #only delete first occurance
-        if (self.length > 0) and self.include?(worker)
-            self.delete_at(self.index(worker))
-        end
-    end
     
     def prioritize_workers()     #order workers from least assigned to most assigned
         workers = []
         (0..@workers.length).each do |counter|
-            @workers.each {|candidate| workers << candidate if (@@scheduled.count_candidates(candidate) <= counter) && !workers.include?(candidate)}
+            @workers.each do |candidate| 
+                workers << candidate if (@@scheduled.count_candidates(candidate) <= counter)
+                break if workers.count == @workers.count
+            end
         end
         workers
     end
