@@ -14,6 +14,7 @@ module Validate
             #multiple weekly assignments
             return false if candidate_in_prior_weeks?(worker_data)
         end
+        
         is_valid
     end
 
