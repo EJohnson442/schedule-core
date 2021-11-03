@@ -45,10 +45,7 @@ class Consecutive_days < Worker
             is_valid = !@worker_list.include?(candidate)
             if @@scheduled.length >= (Worker.daily_tasks_list_count * Worker.scheduled_days_count)
                 worker_helper = Validate::Worker_data.new(candidate,@@scheduled,Worker.daily_tasks_list_count,Worker.scheduled_days_count,Worker.cdays_validate_weeks)
-                weekly_multiple_assignments = Validate::candidate_in_prior_weeks?(worker_helper)
-                if weekly_multiple_assignments
-                    is_valid = false
-                end
+                is_valid = !Validate::candidate_in_prior_weeks?(worker_helper)
             end
             count_candidates = @@scheduled.count_candidates(candidate) + @consecutive_days
             (is_valid and count_candidates <= Worker.max_monthly_assignments)
