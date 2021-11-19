@@ -1,5 +1,6 @@
 require 'logging'
-require_relative 'worker_helper'
+require_relative 'validation'
+#require_relative 'worker_helper'
 
 class Worker
     attr_reader :schedule_type, :workers
