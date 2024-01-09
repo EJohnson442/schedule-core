@@ -40,6 +40,7 @@ class Worker
     end
 
     def set_priority_workers(priority_workers)
+        #puts "#{priority_workers}"
         @@priority_workers.clear()
         total_workers_needed = Worker.priority_schedule_types[schedule_type.to_s].to_i
         if priority_workers.length <= total_workers_needed
